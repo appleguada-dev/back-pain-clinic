@@ -84,7 +84,7 @@
                             <span class="font-bold text-emerald-300 text-xs">{{ log.source }}</span>
                         </div>
                         <div class="font-bold text-white mb-1">{{ log.type }}</div>
-                        <div class="text-xs text-slate-400 leading-snug">{{ log.note.substring(0, 50) }}...</div>
+                        <div class="text-xs text-slate-400 leading-snug">{{ log.note ? log.note.substring(0, 50) + '...' : '' }}</div>
                     </div>
                 </transition-group>
             </div>
