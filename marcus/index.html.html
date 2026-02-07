@@ -85,7 +85,7 @@
                         <div class="flex justify-between items-center mb-1">
                             <span class="font-bold text-red-200 text-xs">{{ test.name }}</span>
                         </div>
-                        <div class="text-xs text-slate-300 leading-snug truncate">تم تسجيل الضعف في السجل</div>
+                        <div class="text-xs text-slate-300 leading-snug">{{ test.reason }}</div>
                     </div>
                 </transition-group>
             </div>
@@ -212,7 +212,7 @@
                         <div class="relative aspect-[4/3] bg-slate-100 rounded-xl overflow-hidden flex items-center justify-center group">
                             <img :src="currentPhysicalTest.image" :alt="currentPhysicalTest.title" class="w-full h-full object-contain p-2">
                             <div class="absolute top-4 left-4 bg-white/90 backdrop-blur text-slate-800 text-xs font-bold px-3 py-1 rounded-full shadow-sm">
-                                اختبار كراوس-ويبر رقم {{ physicalIndex + 1 }}
+                                اختبار رقم {{ physicalIndex + 1 }}
                             </div>
                         </div>
                     </div>
@@ -238,38 +238,32 @@
                             <div class="bg-cyan-50 p-8 border-b border-cyan-100">
                                 <div class="flex items-center gap-3 mb-3">
                                     <span class="text-3xl">🔍</span>
-                                    <h3 class="text-2xl font-bold text-cyan-900">التحليل الطبي العميق:</h3>
+                                    <h3 class="text-2xl font-bold text-cyan-900">النتيجة التحليلية:</h3>
                                 </div>
-                                <p class="text-slate-800 leading-8 font-medium text-lg mb-6 text-justify">{{ currentTestResult.feedback }}</p>
-                                
-                                <div class="flex items-center gap-3">
-                                    <div class="text-sm font-bold text-slate-500">الحالة:</div>
-                                    <div :class="currentTestResult.passed ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'" class="inline-block px-4 py-2 rounded-lg text-sm font-bold shadow-sm">
-                                        {{ currentTestResult.passed ? '✅ عضلات سليمة (Passed)' : '❌ ضعف عضلي (Below Par)' }}
-                                    </div>
+                                <p class="text-slate-800 leading-8 font-medium text-lg mb-4 text-justify">{{ currentTestResult.feedback }}</p>
+                                <div :class="currentTestResult.passed ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'" class="inline-block px-4 py-2 rounded-lg text-sm font-bold shadow-sm">
+                                    {{ currentTestResult.passed ? '✅ نجاح (Passed)' : '❌ فشل (Below Par)' }}
                                 </div>
                             </div>
 
                             <div class="grid grid-cols-2 divide-x divide-x-reverse divide-slate-100">
                                 <div class="p-6 bg-green-50/50">
-                                    <h4 class="text-green-700 font-black mb-4 flex items-center gap-2 text-lg"><span>✅</span> افعل</h4>
+                                    <h4 class="text-green-700 font-black mb-4 flex items-center gap-2 text-lg"><span>✅</span> نصيحة علاجية</h4>
                                     <ul v-if="currentTestResult.dos.length > 0" class="text-sm text-slate-700 space-y-3 font-medium">
                                         <li v-for="tip in currentTestResult.dos" class="flex items-start gap-2"><span class="text-green-500 mt-1">•</span> {{ tip }}</li>
                                     </ul>
-                                    <p v-else class="text-xs text-slate-400">حافظ على نشاطك الحالي.</p>
                                 </div>
                                 <div class="p-6 bg-red-50/50">
-                                    <h4 class="text-red-700 font-black mb-4 flex items-center gap-2 text-lg"><span>❌</span> تجنب</h4>
+                                    <h4 class="text-red-700 font-black mb-4 flex items-center gap-2 text-lg"><span>❌</span> خطأ شائع</h4>
                                     <ul v-if="currentTestResult.avoids.length > 0" class="text-sm text-slate-700 space-y-3 font-medium">
                                         <li v-for="tip in currentTestResult.avoids" class="flex items-start gap-2"><span class="text-red-500 mt-1">•</span> {{ tip }}</li>
                                     </ul>
-                                    <p v-else class="text-xs text-slate-400">لا توجد محاذير خاصة.</p>
                                 </div>
                             </div>
 
                             <div class="p-6 bg-slate-50 border-t border-slate-100">
                                 <button @click="nextPhysicalTest" class="w-full bg-slate-900 text-white py-4 rounded-xl font-bold hover:bg-black shadow-lg flex justify-center items-center gap-2 transition-all hover:scale-[1.02]">
-                                    <span>حفظ النتيجة والانتقال للتالي</span>
+                                    <span>حفظ والانتقال للتالي</span>
                                     <span>&larr;</span>
                                 </button>
                             </div>
@@ -294,8 +288,8 @@
                 <div class="px-8 max-w-6xl mx-auto">
                     
                     <div class="text-center mb-10">
-                        <h2 class="text-3xl font-bold text-slate-800 inline-block border-b-4 border-cyan-500 pb-2">التشخيص: {{ diagnosisTitle }}</h2>
-                        <p class="text-slate-500 mt-2 text-lg">{{ diagnosisSubtitle }}</p>
+                        <h2 class="text-3xl font-bold text-slate-800 inline-block border-b-4 border-cyan-500 pb-2">التوصية العلاجية</h2>
+                        <p class="text-slate-500 mt-2">بناءً على نظرية كراوس-ويبر، يتم تحديد مستواك بناءً على أضعف حلقة لديك.</p>
                     </div>
 
                     <div class="bg-white rounded-3xl shadow-xl overflow-hidden border-2 border-cyan-100 mb-12">
@@ -429,7 +423,7 @@ createApp({
             // === 2. KRAUS-WEBER TESTS (Deep Explanation) ===
             physicalTests: [
                 { 
-                    id: 'kw1', title: '1. البطن والساقين ممدودتين (Abs+Psoas)', image: 'img/test1.jpg', 
+                    id: 'kw1', title: '1. البطن والساقين ممدودتين (Abs+Psoas)', image: 'img/test1.png', 
                     instruction: `<ul><li>استلقِ على ظهرك، يديك خلف رقبتك، وساقيك ممدودتين.</li><li>ثبت قدميك (تحت كنبة أو بمساعدة شخص).</li><li>حاول الجلوس حتى وضعية الجلوس الكاملة.</li></ul>`, 
                     question: 'هل نجحت في الجلوس؟', 
                     options: [ 
@@ -448,7 +442,7 @@ createApp({
                     ] 
                 },
                 { 
-                    id: 'kw2', title: '2. البطن مع ثني الركبة (Pure Abs)', image: 'img/test2.jpg', 
+                    id: 'kw2', title: '2. البطن مع ثني الركبة (Pure Abs)', image: 'img/test2.png', 
                     instruction: `<ul><li>استلقِ على ظهرك واثنِ ركبتيك.</li><li>ثبت قدميك.</li><li>حاول الجلوس بالكامل دون استخدام اليدين.</li></ul>`, 
                     question: 'هل نجحت؟', 
                     options: [ 
@@ -467,7 +461,7 @@ createApp({
                     ] 
                 },
                 { 
-                    id: 'kw3', title: '3. رفع الساقين (Lower Abs)', image: 'img/test3.jpg', 
+                    id: 'kw3', title: '3. رفع الساقين (Lower Abs)', image: 'img/test3.png', 
                     instruction: `<ul><li>استلقِ على ظهرك، ساقيك ممدودتين.</li><li>ارفع ساقيك 25 سم عن الأرض لمدة 10 ثوانٍ.</li><li>يجب ألا يتقوس ظهرك.</li></ul>`, 
                     question: 'هل صمدت 10 ثوانٍ دون تقوس الظهر؟', 
                     options: [ 
@@ -486,7 +480,7 @@ createApp({
                     ] 
                 },
                 { 
-                    id: 'kw4', title: '4. رفع الظهر العلوي', image: 'img/test4.jpg', 
+                    id: 'kw4', title: '4. رفع الظهر العلوي', image: 'img/test4.png', 
                     instruction: `<ul><li>استلقِ على بطنك (وسادة تحت الحوض).</li><li>ارفع رأسك وكتفيك عن الأرض لمدة 10 ثوانٍ.</li></ul>`, 
                     question: 'هل صمدت 10 ثوانٍ؟', 
                     options: [ 
@@ -505,7 +499,7 @@ createApp({
                     ] 
                 },
                 { 
-                    id: 'kw5', title: '5. رفع الظهر السفلي', image: 'img/test5.jpg', 
+                    id: 'kw5', title: '5. رفع الظهر السفلي', image: 'img/test5.png', 
                     instruction: `<ul><li>استلقِ على بطنك.</li><li>ارفع ساقيك المستقيمتين معاً لمدة 10 ثوانٍ.</li></ul>`, 
                     question: 'هل نجحت؟', 
                     options: [ 
@@ -524,7 +518,7 @@ createApp({
                     ] 
                 },
                 { 
-                    id: 'kw6', title: '6. المرونة (Flexibility)', image: 'img/test6.jpg', 
+                    id: 'kw6', title: '6. المرونة (Flexibility)', image: 'img/test6.png', 
                     instruction: `<ul><li>قف مستقيماً.</li><li>انحنِ وحاول لمس الأرض بأطراف أصابعك دون ثني الركبة.</li></ul>`, 
                     question: 'هل لمست الأرض؟', 
                     options: [ 
@@ -601,8 +595,16 @@ createApp({
         },
         diagnosisTitle() { return this.failedTestsCount > 0 ? "تحت المستوى (Below Par)" : "مستوى الصيانة (Good)"; },
         diagnosisSubtitle() { return this.failedTestsCount > 0 ? `فشلت في ${this.failedTestsCount} من أصل 6 اختبارات. عضلاتك "Soft Tissue" تحتاج لإعادة تأهيل.` : "نجحت في جميع الاختبارات. يمكنك الحفاظ على صحة ظهرك بالمستوى المتقدم."; },
-        // Default recommendation based on logic
-        recommendedLevel() { return this.failedTestsCount > 0 ? this.levels[1] : this.levels[2]; } 
+        recommendedLevel() { return this.failedTestsCount > 0 ? this.levels[1] : this.levels[2]; },
+        finalDiagnosis() {
+            let dos = ["التنفس العميق (Diaphragmatic Breathing)", "المشي الخفيف"];
+            let avoids = ["الراحة التامة في السرير (Bed Rest)", "البقاء دون حركة"];
+
+            if (this.globalDos.length > 0) dos = [...new Set([...dos, ...this.globalDos])];
+            if (this.globalAvoids.length > 0) avoids = [...new Set([...avoids, ...this.globalAvoids])];
+
+            return { dos, avoids };
+        }
     },
     methods: {
         startApp() { this.currentPhase = 'history'; },
@@ -618,10 +620,12 @@ createApp({
         handlePhysicalAnswer(option) {
             this.currentTestResult = option;
             this.physicalLog.push({ title: this.currentPhysicalTest.title, passed: option.passed });
-            // "isPain" is essentially "Failed Test" in this context
             this.physicalLog[this.physicalLog.length - 1].isPain = !option.passed; 
             
             if (!option.passed) this.failedTests.push({ name: this.currentPhysicalTest.title, reason: option.feedback });
+            
+            if (option.dos) this.globalDos.push(...option.dos);
+            if (option.avoids) this.globalAvoids.push(...option.avoids);
         },
         nextPhysicalTest() {
             this.currentTestResult = null;
@@ -633,7 +637,6 @@ createApp({
             }
         },
         toggleProgram() { 
-            // Default to recommended if no specific one clicked
             if(!this.displayedLevel) this.displayedLevel = this.recommendedLevel;
             this.showProgram = !this.showProgram; 
         },
