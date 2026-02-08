@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>BackRx | بروتوكول ماركوس العلاجي</title>
+    <title>BodyArchitect | المختبر التشخيصي الشامل</title>
     <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700;800;900&display=swap" rel="stylesheet">
@@ -14,12 +14,10 @@
         .fade-enter-active, .fade-leave-active { transition: opacity 0.3s ease; }
         .fade-enter-from, .fade-leave-to { opacity: 0; }
         
-        /* Custom Scrollbar (Cyan Theme) */
+        /* Custom Scrollbar */
         ::-webkit-scrollbar { width: 6px; }
         ::-webkit-scrollbar-track { background: #f1f1f1; }
-        ::-webkit-scrollbar-thumb { background: #0891b2; border-radius: 4px; }
-
-        .ltr-text { direction: ltr; display: inline-block; font-family: sans-serif; }
+        ::-webkit-scrollbar-thumb { background: #059669; border-radius: 4px; }
 
         /* Animation for the Guide Button */
         @keyframes float {
@@ -54,46 +52,47 @@
         }
     </style>
 </head>
-<body class="bg-slate-50 text-slate-800 h-screen overflow-hidden selection:bg-cyan-200">
+<body class="bg-slate-100 text-slate-800 h-screen overflow-hidden selection:bg-emerald-200">
 
 <div id="app" class="h-full flex flex-col md:flex-row">
 
     <aside class="w-full md:w-80 bg-gradient-to-b from-slate-900 to-slate-800 text-white flex flex-col shadow-2xl z-20 shrink-0 h-full no-print">
-        <div class="p-6 bg-cyan-700 shadow-lg relative overflow-hidden">
+        <div class="p-6 bg-emerald-600 shadow-lg relative overflow-hidden">
             <div class="absolute -top-10 -left-10 w-32 h-32 bg-white/10 rounded-full blur-2xl"></div>
             <h1 class="text-2xl font-black flex items-center gap-3 relative z-10">
-                <span class="text-3xl">🧬</span> BackRx
+                <span class="text-3xl">🩺</span> BodyArchitect
             </h1>
-            <p class="text-cyan-100 text-xs mt-1 font-bold tracking-wider relative z-10 opacity-90">بروتوكول ماركوس (Kraus-Weber)</p>
+            <p class="text-emerald-100 text-xs mt-1 font-bold tracking-wider relative z-10 opacity-90">نظام التشخيص المتكامل</p>
         </div>
 
         <div class="flex-1 overflow-y-auto p-4 space-y-6">
             <div>
                 <div class="flex justify-between text-xs text-slate-400 mb-2 font-bold">
-                    <span>مرحلة الفحص</span>
+                    <span>رحلة التشخيص</span>
                     <span>{{ Math.round(progress) }}%</span>
                 </div>
                 <div class="w-full bg-slate-700 h-3 rounded-full overflow-hidden shadow-inner">
-                    <div class="bg-gradient-to-l from-cyan-400 to-cyan-600 h-full transition-all duration-1000 ease-out relative" :style="{ width: progress + '%' }"></div>
+                    <div class="bg-gradient-to-l from-emerald-400 to-emerald-600 h-full transition-all duration-1000 ease-out relative" :style="{ width: progress + '%' }"></div>
                 </div>
             </div>
 
             <div>
                 <h3 class="text-xs font-bold text-slate-400 uppercase tracking-widest mb-3 border-b border-slate-700 pb-2 flex justify-between items-center">
-                    <span>نقاط الضعف (Failures)</span>
-                    <span class="bg-red-500 text-white text-[10px] px-2 py-0.5 rounded-full">{{ failedTests.length }}</span>
+                    <span>سجل الأدلة</span>
+                    <span class="bg-slate-700 text-white text-[10px] px-2 py-0.5 rounded-full">{{ evidenceLog.length }}</span>
                 </h3>
                 
-                <div v-if="failedTests.length === 0" class="text-sm text-slate-500 italic text-center py-6 border border-dashed border-slate-700 rounded-lg">
-                    بانتظار النتائج...
+                <div v-if="evidenceLog.length === 0" class="text-sm text-slate-500 italic text-center py-6 border border-dashed border-slate-700 rounded-lg">
+                    يتم تجميع الأدلة...
                 </div>
                 
                 <transition-group name="fade" tag="div" class="space-y-2">
-                    <div v-for="(test, i) in failedTests" :key="i" class="bg-red-900/30 border-r-4 border-red-500 p-3 rounded-lg text-sm cursor-default group">
+                    <div v-for="(log, i) in evidenceLog" :key="i" class="bg-slate-700/50 border-r-4 border-emerald-500 p-3 rounded-lg text-sm hover:bg-slate-700 transition-colors cursor-default group">
                         <div class="flex justify-between items-center mb-1">
-                            <span class="font-bold text-red-200 text-xs">{{ test.name }}</span>
+                            <span class="font-bold text-emerald-300 text-xs">{{ log.source }}</span>
                         </div>
-                        <div class="text-xs text-slate-300 leading-snug truncate">تم تسجيل الضعف في السجل</div>
+                        <div class="font-bold text-white mb-1">{{ log.type }}</div>
+                        <div class="text-xs text-slate-400 leading-snug">{{ log.note ? log.note.substring(0, 50) + '...' : '' }}</div>
                     </div>
                 </transition-group>
             </div>
@@ -106,40 +105,36 @@
             <div>
                 <h2 v-if="currentPhase === 'history'" class="text-xl font-bold text-slate-800 flex items-center gap-2">
                     <span class="bg-blue-100 text-blue-700 p-1.5 rounded-lg text-sm">1</span>
-                    الفحص الأمني (Safety)
+                    تحليل التاريخ الطبي
                 </h2>
                 <h2 v-else-if="currentPhase === 'physical'" class="text-xl font-bold text-slate-800 flex items-center gap-2">
-                    <span class="bg-cyan-100 text-cyan-700 p-1.5 rounded-lg text-sm">2</span>
-                    اختبارات كراوس-ويبر ({{ physicalIndex + 1 }}/6)
+                    <span class="bg-emerald-100 text-emerald-700 p-1.5 rounded-lg text-sm">2</span>
+                    الاختبار الجسدي {{ physicalIndex + 1 }} / {{ physicalTests.length }}
                 </h2>
                 <h2 v-else-if="currentPhase === 'final'" class="text-xl font-bold text-slate-800 flex items-center gap-2">
                     <span class="bg-purple-100 text-purple-700 p-1.5 rounded-lg text-sm">3</span>
-                    الخطة العلاجية
+                    التقرير النهائي
                 </h2>
                 <h2 v-else class="text-xl font-bold text-slate-800">مرحباً بك</h2>
             </div>
-            <div class="text-xs font-bold text-slate-400 bg-slate-100 px-3 py-1 rounded-full">Kraus-Weber Protocol ™</div>
+            <div class="text-xs font-bold text-slate-400 bg-slate-100 px-3 py-1 rounded-full">Back Mechanic Protocol ™</div>
         </header>
 
         <div class="flex-1 overflow-y-auto p-4 md:p-8 relative" id="main-scroll">
             
             <div v-if="currentPhase === 'intro'" class="max-w-2xl mx-auto mt-10 animate-fade-in-up">
                 <div class="bg-white p-10 rounded-3xl shadow-2xl text-center border border-slate-100 relative overflow-hidden">
-                    <div class="absolute top-0 left-0 w-full h-2 bg-gradient-to-r from-cyan-400 to-blue-500"></div>
-                    <div class="w-24 h-24 bg-cyan-50 rounded-full flex items-center justify-center text-5xl mx-auto mb-6 shadow-sm">🧬</div>
-                    <h2 class="text-4xl font-black text-slate-800 mb-4 tracking-tight">نظام BackRx للعمود الفقري</h2>
-                    <p class="text-slate-600 mb-6 leading-relaxed text-lg">
-                        تعتمد هذه المنهجية على أبحاث الدكاترة "هانز كراوس" و"نورمان ماركوس".
-                        <br><strong>الفلسفة:</strong> ألم الظهر غالباً ما يكون مشكلة في "العضلات" (Software) وليس "العظام" (Hardware).
-                    </p>
+                    <div class="absolute top-0 left-0 w-full h-2 bg-gradient-to-r from-emerald-400 to-blue-500"></div>
+                    <div class="w-24 h-24 bg-emerald-50 rounded-full flex items-center justify-center text-5xl mx-auto mb-6 shadow-sm">🩻</div>
+                    <h2 class="text-4xl font-black text-slate-800 mb-4 tracking-tight">المختبر التشخيصي الذاتي</h2>
                     
                     <div class="bg-amber-50 border border-amber-200 rounded-xl p-5 mb-8 text-right shadow-sm">
                         <h4 class="text-amber-800 font-bold mb-2 flex items-center gap-2"><span>⚠️</span> تنويه طبي هام</h4>
                         <p class="text-amber-700 text-sm leading-relaxed mb-4 font-medium">
-                            هذا التطبيق يساعدك على اكتشاف العضلات الضعيفة أو المتشنجة. لا يحل محل الطبيب. إذا شعرت بألم حاد (Acute Pain) أثناء أي اختبار، توقف فوراً.
+                            هذا التطبيق أداة تعليمية لرفع الوعي الجسدي. النتائج ليست تشخيصاً طبياً نهائياً ودقتها ليست 100%. الهدف هو مساعدتك على تجنب الحركات المؤذية وتجهيزك لزيارة الطبيب.
                         </p>
                         <label class="flex items-center gap-3 cursor-pointer group bg-white p-3 rounded-lg border border-amber-100 hover:border-amber-300 transition-colors">
-                            <input type="checkbox" v-model="disclaimerAccepted" class="w-5 h-5 accent-cyan-600 rounded border-gray-300">
+                            <input type="checkbox" v-model="disclaimerAccepted" class="w-5 h-5 accent-emerald-600 rounded border-gray-300">
                             <span class="text-sm font-bold text-slate-700">فهمت ذلك، وأوافق على المتابعة.</span>
                         </label>
                     </div>
@@ -147,69 +142,65 @@
                     <div class="grid grid-cols-2 gap-4 text-right bg-slate-50 p-6 rounded-2xl border border-slate-200 mb-8">
                         <div>
                             <label class="block text-xs font-bold text-slate-500 mb-1">الاسم</label>
-                            <input v-model="user.name" class="w-full bg-white border border-slate-300 rounded-lg p-3 outline-none focus:border-cyan-500 transition-colors">
+                            <input v-model="user.name" class="w-full bg-white border border-slate-300 rounded-lg p-3 outline-none focus:border-emerald-500 transition-colors">
                         </div>
                         <div>
                             <label class="block text-xs font-bold text-slate-500 mb-1">العمر</label>
-                            <input v-model.number="user.age" type="number" class="w-full bg-white border border-slate-300 rounded-lg p-3 outline-none focus:border-cyan-500 transition-colors">
+                            <input v-model.number="user.age" type="number" class="w-full bg-white border border-slate-300 rounded-lg p-3 outline-none focus:border-emerald-500 transition-colors">
                         </div>
                     </div>
-                    <button @click="startApp" :disabled="!user.name || !disclaimerAccepted" class="w-full bg-cyan-600 text-white py-4 rounded-xl font-bold text-lg shadow-lg hover:bg-cyan-700 transition-all transform hover:-translate-y-1 disabled:opacity-50 disabled:cursor-not-allowed">
+                    <button @click="startApp" :disabled="!user.name || !disclaimerAccepted" class="w-full bg-emerald-600 text-white py-4 rounded-xl font-bold text-lg shadow-lg hover:bg-emerald-700 transition-all transform hover:-translate-y-1 disabled:opacity-50 disabled:cursor-not-allowed">
                         ابدأ التقييم الآن
                     </button>
                 </div>
             </div>
 
             <div v-if="currentPhase === 'history'" class="max-w-3xl mx-auto">
-                <div v-if="historyIndex === -1" class="bg-white rounded-2xl shadow-xl p-8 mb-6 animate-fade-in-up border-l-8 border-cyan-500">
-                    <h3 class="text-2xl font-bold text-slate-800 mb-4">المرحلة الأولى: الأمان والفحص الأولي</h3>
+                <div v-if="historyIndex === -1" class="bg-white rounded-2xl shadow-xl p-8 mb-6 animate-fade-in-up border-l-8 border-emerald-500">
+                    <h3 class="text-2xl font-bold text-slate-800 mb-4">الخطوة 1: اصنع قوائمك (Make Your Lists)</h3>
                     <div class="text-slate-600 leading-relaxed space-y-4 mb-8 text-base font-medium">
                         <p>
-                            قبل أن نبدأ في الاختبارات الجسدية (Kraus-Weber Tests)، يجب أن نتأكد من أنك لست في حالة إصابة حادة تمنعك من الحركة.
+                            قبل أن نبدأ، أحضر ورقة وقلماً. اكتب قائمتين:
+                            <br><strong>1. قائمة الأنشطة التي تزيد الألم.</strong>
+                            <br><strong>2. قائمة الأنشطة التي لا تسبب ألماً (أو تريحه).</strong>
                         </p>
-                        <div class="bg-blue-50 p-5 rounded-xl border border-blue-200">
-                            <strong>الهدف:</strong> تحديد ما إذا كان الألم ناتجاً عن "تشنج عضلي" (Muscle Tension) أو ضعف، وهو ما يعالجه هذا البرنامج، أم مشكلة طبية طارئة.
+                        <div class="bg-yellow-50 p-5 rounded-xl border border-yellow-200">
+                            <strong>لماذا؟</strong> لأن فهم النمط هو نصف العلاج. 
+                            <br>• إذا كان الجلوس وربط الحذاء يسببان الألم، بينما المشي يريحك، فإن مشكلتك هي غالباً <strong>"عدم تحمل الانحناء"</strong>.
+                            <br>• أما إذا كان المشي يزيد الألم بينما الجلوس يريحك، فغالباً عمودك الفقري يعاني من <strong>التهاب المفاصل أو التضيق</strong>.
                         </div>
                     </div>
                     <button @click="historyIndex = 0" class="w-full bg-slate-800 text-white py-4 rounded-xl font-bold hover:bg-slate-900 transition-colors flex justify-center items-center gap-2 shadow-lg">
-                        <span>ابدأ الفحص الأمني</span>
+                        <span>أنا جاهز، ابدأ الأسئلة</span>
                         <span>&larr;</span>
                     </button>
                 </div>
 
                 <div v-else class="transition-all duration-300">
-                    <div v-if="!safetyPassed" class="bg-white rounded-2xl shadow-xl p-8 mb-6 animate-fade-in-up border-l-8 border-red-500">
-                        <h3 class="text-2xl font-bold text-red-800 mb-4">توقف!</h3>
-                        <p class="text-slate-600 text-lg">بناءً على إجابتك، حالتك تتطلب عناية طبية فورية ولا تناسب التمارين المنزلية حالياً.</p>
-                        <button @click="resetApp" class="mt-6 px-6 py-3 bg-slate-800 text-white rounded-lg">إعادة البدء</button>
-                    </div>
-
-                    <div v-else>
-                        <div v-if="!lastAnswerNote" class="bg-white rounded-2xl shadow-lg p-8 mb-6 animate-fade-in-up">
-                            <div class="mb-6 flex justify-between items-center">
-                                <span class="text-xs font-bold text-cyan-700 bg-cyan-100 px-3 py-1 rounded-full">سؤال الأمان {{ historyIndex + 1 }} / 3</span>
-                            </div>
-                            <h3 class="text-2xl font-bold mb-8 text-slate-800 leading-snug">{{ currentHistoryQ.text }}</h3>
-                            <div class="space-y-4">
-                                <button v-for="opt in currentHistoryQ.options" @click="handleHistoryAnswer(opt)" class="w-full text-right p-5 rounded-xl border-2 border-slate-100 hover:border-cyan-500 hover:bg-cyan-50 transition-all flex justify-between items-center group">
-                                    <span class="font-bold text-slate-700 text-lg">{{ opt.label }}</span>
-                                    <div class="w-6 h-6 rounded-full border-2 border-slate-300 group-hover:border-cyan-500 group-hover:bg-cyan-500 flex items-center justify-center transition-colors">
-                                        <span class="text-white text-xs opacity-0 group-hover:opacity-100">✓</span>
-                                    </div>
-                                </button>
-                            </div>
+                    <div v-if="!lastAnswerNote" class="bg-white rounded-2xl shadow-lg p-8 mb-6 animate-fade-in-up">
+                        <div class="mb-6 flex justify-between items-center">
+                            <span class="text-xs font-bold text-emerald-700 bg-emerald-100 px-3 py-1 rounded-full">سؤال {{ historyIndex + 1 }} / 10</span>
                         </div>
-
-                        <div v-else class="bg-blue-50 border-r-8 border-blue-500 p-8 rounded-2xl shadow-lg mb-6 animate-fade-in-up">
-                            <div class="flex items-center gap-3 mb-4">
-                                <span class="text-3xl bg-white p-2 rounded-full shadow-sm">💡</span>
-                                <h4 class="font-bold text-blue-900 text-xl">توجيه طبي:</h4>
-                            </div>
-                            <p class="text-slate-800 text-lg leading-8 mb-8 font-medium text-justify">{{ lastAnswerNote }}</p>
-                            <button @click="nextHistoryQuestion" class="w-full bg-blue-600 text-white py-4 rounded-xl font-bold hover:bg-blue-700 shadow-lg transition-transform hover:scale-[1.01]">
-                                التالي &larr;
+                        <h3 class="text-2xl font-bold mb-8 text-slate-800 leading-snug">{{ currentHistoryQ.text }}</h3>
+                        <div class="space-y-4">
+                            <button v-for="opt in currentHistoryQ.options" @click="handleHistoryAnswer(opt)" class="w-full text-right p-5 rounded-xl border-2 border-slate-100 hover:border-emerald-500 hover:bg-emerald-50 transition-all flex justify-between items-center group">
+                                <span class="font-bold text-slate-700 text-lg">{{ opt.label }}</span>
+                                <div class="w-6 h-6 rounded-full border-2 border-slate-300 group-hover:border-emerald-500 group-hover:bg-emerald-500 flex items-center justify-center transition-colors">
+                                    <span class="text-white text-xs opacity-0 group-hover:opacity-100">✓</span>
+                                </div>
                             </button>
                         </div>
+                    </div>
+
+                    <div v-else class="bg-blue-50 border-r-8 border-blue-500 p-8 rounded-2xl shadow-lg mb-6 animate-fade-in-up">
+                        <div class="flex items-center gap-3 mb-4">
+                            <span class="text-3xl bg-white p-2 rounded-full shadow-sm">💡</span>
+                            <h4 class="font-bold text-blue-900 text-xl">تحليل حالتك الفوري:</h4>
+                        </div>
+                        <p class="text-slate-800 text-lg leading-8 mb-8 font-medium text-justify">{{ lastAnswerNote }}</p>
+                        <button @click="nextHistoryQuestion" class="w-full bg-blue-600 text-white py-4 rounded-xl font-bold hover:bg-blue-700 shadow-lg transition-transform hover:scale-[1.01]">
+                            السؤال التالي &larr;
+                        </button>
                     </div>
                 </div>
             </div>
@@ -220,13 +211,13 @@
                         <div class="relative aspect-[4/3] bg-slate-100 rounded-xl overflow-hidden flex items-center justify-center group">
                             <img :src="currentPhysicalTest.image" :alt="currentPhysicalTest.title" class="w-full h-full object-contain p-2">
                             <div class="absolute top-4 left-4 bg-white/90 backdrop-blur text-slate-800 text-xs font-bold px-3 py-1 rounded-full shadow-sm">
-                                اختبار كراوس-ويبر رقم {{ physicalIndex + 1 }}
+                                وضعية الاختبار
                             </div>
                         </div>
                     </div>
-                    <div class="bg-white p-8 rounded-2xl shadow-md border-t-4 border-cyan-500 flex-1">
-                        <h3 class="text-cyan-800 font-bold mb-4 flex items-center gap-2 text-lg"><span>📋</span> تعليمات الأداء:</h3>
-                        <div class="text-slate-600 text-base leading-relaxed space-y-4" v-html="currentPhysicalTest.instruction"></div>
+                    <div class="bg-white p-8 rounded-2xl shadow-md border-t-4 border-emerald-500 flex-1 overflow-y-auto">
+                        <h3 class="text-emerald-800 font-bold mb-4 flex items-center gap-2 text-lg"><span>📋</span> تعليمات الأداء الدقيقة:</h3>
+                        <div class="text-slate-700 text-base leading-8 space-y-4 marker:text-emerald-500" v-html="currentPhysicalTest.instruction"></div>
                     </div>
                 </div>
 
@@ -235,26 +226,22 @@
                         <div v-if="!currentTestResult" class="bg-white p-10 rounded-3xl shadow-2xl border border-slate-100">
                             <h3 class="text-2xl font-black text-slate-800 mb-8 leading-snug">{{ currentPhysicalTest.question }}</h3>
                             <div class="space-y-4">
-                                <button v-for="opt in currentPhysicalTest.options" @click="handlePhysicalAnswer(opt)" class="w-full text-right p-6 rounded-2xl border-2 border-slate-100 hover:border-cyan-500 hover:bg-cyan-50 hover:shadow-lg transition-all flex justify-between items-center group">
-                                    <span class="font-bold text-slate-700 text-lg group-hover:text-cyan-800">{{ opt.label }}</span>
-                                    <span class="text-2xl text-slate-300 group-hover:text-cyan-500 transition-colors">➜</span>
+                                <button v-for="opt in currentPhysicalTest.options" @click="handlePhysicalAnswer(opt)" class="w-full text-right p-6 rounded-2xl border-2 border-slate-100 hover:border-emerald-500 hover:bg-emerald-50 hover:shadow-lg transition-all flex justify-between items-center group">
+                                    <span class="font-bold text-slate-700 text-lg group-hover:text-emerald-800">{{ opt.label }}</span>
+                                    <span class="text-2xl text-slate-300 group-hover:text-emerald-500 transition-colors">➜</span>
                                 </button>
                             </div>
                         </div>
 
-                        <div v-else class="bg-white rounded-3xl shadow-2xl border-2 border-cyan-100 overflow-hidden">
-                            <div class="bg-cyan-50 p-8 border-b border-cyan-100">
+                        <div v-else class="bg-white rounded-3xl shadow-2xl border-2 border-emerald-100 overflow-hidden">
+                            <div class="bg-emerald-50 p-8 border-b border-emerald-100">
                                 <div class="flex items-center gap-3 mb-3">
                                     <span class="text-3xl">🔍</span>
-                                    <h3 class="text-2xl font-bold text-cyan-900">التحليل الطبي العميق:</h3>
+                                    <h3 class="text-2xl font-bold text-emerald-900">التحليل العميق:</h3>
                                 </div>
-                                <p class="text-slate-800 leading-8 font-medium text-lg mb-6 text-justify">{{ currentTestResult.feedback }}</p>
-                                
-                                <div class="flex items-center gap-3">
-                                    <div class="text-sm font-bold text-slate-500">الحالة:</div>
-                                    <div :class="currentTestResult.passed ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'" class="inline-block px-4 py-2 rounded-lg text-sm font-bold shadow-sm">
-                                        {{ currentTestResult.passed ? '✅ عضلات سليمة (Passed)' : '❌ ضعف عضلي (Below Par)' }}
-                                    </div>
+                                <p class="text-slate-800 leading-8 font-medium text-lg mb-4 text-justify">{{ currentTestResult.feedback }}</p>
+                                <div v-if="currentTestResult.diagnosis" class="inline-block bg-white text-emerald-700 px-4 py-2 rounded-lg text-sm font-bold shadow-sm border border-emerald-200">
+                                    المؤشر: {{ currentTestResult.diagnosis }}
                                 </div>
                             </div>
 
@@ -264,14 +251,14 @@
                                     <ul v-if="currentTestResult.dos.length > 0" class="text-sm text-slate-700 space-y-3 font-medium">
                                         <li v-for="tip in currentTestResult.dos" class="flex items-start gap-2"><span class="text-green-500 mt-1">•</span> {{ tip }}</li>
                                     </ul>
-                                    <p v-else class="text-xs text-slate-400">حافظ على نشاطك الحالي.</p>
+                                    <p v-else class="text-xs text-slate-400 italic">لا توجد توصيات خاصة لهذه النتيجة.</p>
                                 </div>
                                 <div class="p-6 bg-red-50/50">
                                     <h4 class="text-red-700 font-black mb-4 flex items-center gap-2 text-lg"><span>❌</span> تجنب</h4>
                                     <ul v-if="currentTestResult.avoids.length > 0" class="text-sm text-slate-700 space-y-3 font-medium">
                                         <li v-for="tip in currentTestResult.avoids" class="flex items-start gap-2"><span class="text-red-500 mt-1">•</span> {{ tip }}</li>
                                     </ul>
-                                    <p v-else class="text-xs text-slate-400">لا توجد محاذير خاصة.</p>
+                                    <p v-else class="text-xs text-slate-400 italic">لا توجد تحذيرات خاصة لهذه النتيجة.</p>
                                 </div>
                             </div>
 
@@ -289,12 +276,12 @@
             <div v-if="currentPhase === 'final'" class="max-w-5xl mx-auto printable-area bg-slate-50 p-0 animate-fade-in-up mb-20 relative">
                 
                 <div class="bg-slate-900 text-white p-12 rounded-b-[40px] shadow-2xl text-center relative overflow-hidden mb-12">
-                    <div class="absolute top-0 left-0 w-full h-full bg-gradient-to-tr from-cyan-600/30 to-blue-600/30"></div>
+                    <div class="absolute top-0 left-0 w-full h-full bg-gradient-to-tr from-emerald-600/30 to-blue-600/30"></div>
                     <div class="relative z-10">
-                        <h1 class="text-4xl font-black mb-2 tracking-tight">تقرير بروتوكول ماركوس</h1>
-                        <p class="text-slate-400 text-lg font-light">تحليل نقاط الضعف العضلية (The Weak Link)</p>
+                        <h1 class="text-4xl font-black mb-2 tracking-tight">تقرير استراتيجية الحركة</h1>
+                        <p class="text-slate-400 text-lg font-light">ملخص التوجيهات السلوكية الشامل (Behavioral Summary)</p>
                         <div class="mt-6 inline-flex bg-white/10 backdrop-blur rounded-full px-6 py-2 text-sm">
-                            <span class="text-cyan-300 font-bold ml-2">المستخدم:</span> {{ user.name }} | {{ new Date().toLocaleDateString('ar-EG') }}
+                            <span class="text-emerald-300 font-bold ml-2">المستخدم:</span> {{ user.name }} | {{ new Date().toLocaleDateString('ar-EG') }}
                         </div>
                     </div>
                 </div>
@@ -302,61 +289,107 @@
                 <div class="px-8 max-w-6xl mx-auto">
                     
                     <div class="text-center mb-10">
-                        <h2 class="text-3xl font-bold text-slate-800 inline-block border-b-4 border-cyan-500 pb-2">التشخيص: {{ diagnosisTitle }}</h2>
-                        <p class="text-slate-500 mt-2 text-lg">{{ diagnosisSubtitle }}</p>
+                        <h2 class="text-3xl font-bold text-slate-800 inline-block border-b-4 border-emerald-500 pb-2">القائمة الذهبية (The Essentials)</h2>
+                        <p class="text-slate-500 mt-2">خلاصة مركزة للحركات الآمنة والممنوعة بناءً على ردود أفعالك.</p>
                     </div>
 
-                    <div class="bg-white rounded-3xl shadow-xl overflow-hidden border-2 border-cyan-100 mb-12">
-                        <div class="bg-cyan-600 p-6 text-white flex justify-between items-center">
-                            <h3 class="text-2xl font-bold">البرنامج المقترح: {{ recommendedLevel.name }}</h3>
-                            <span class="bg-white/20 px-4 py-1 rounded-full text-sm">التركيز: {{ recommendedLevel.focus }}</span>
-                        </div>
-                        <div class="p-8 text-center">
-                            <button @click="openSpecificLevel(recommendedLevel.id)" class="inline-flex items-center gap-2 bg-slate-800 text-white px-8 py-5 rounded-2xl font-bold hover:bg-slate-900 shadow-xl transition-all hover:-translate-y-1">
-                                <span class="text-2xl">📋</span>
-                                <div class="text-right">
-                                    <div class="text-xs font-light opacity-70">افتح البرنامج</div>
-                                    <div>عرض تمارين المستوى المقترح</div>
-                                </div>
-                            </button>
-                        </div>
-                    </div>
-
-                    <div class="mb-16 print-break">
-                        <h3 class="text-xl font-black text-slate-800 mb-6 border-r-8 border-slate-400 pr-4">تصفح كافة المستويات (Browse All Levels)</h3>
-                        <div class="grid md:grid-cols-3 gap-4">
-                            <button @click="openSpecificLevel(1)" class="p-4 rounded-xl border border-cyan-200 bg-cyan-50 hover:bg-cyan-100 transition-colors text-right">
-                                <div class="font-bold text-cyan-800 text-lg">المستوى 1</div>
-                                <div class="text-xs text-cyan-600">الاسترخاء (Relaxation)</div>
-                            </button>
-                            <button @click="openSpecificLevel(2)" class="p-4 rounded-xl border border-blue-200 bg-blue-50 hover:bg-blue-100 transition-colors text-right">
-                                <div class="font-bold text-blue-800 text-lg">المستوى 2</div>
-                                <div class="text-xs text-blue-600">التقوية (Mobilization)</div>
-                            </button>
-                            <button @click="openSpecificLevel(3)" class="p-4 rounded-xl border border-green-200 bg-green-50 hover:bg-green-100 transition-colors text-right">
-                                <div class="font-bold text-green-800 text-lg">المستوى 3</div>
-                                <div class="text-xs text-green-600">المتقدم (Maintenance)</div>
-                            </button>
-                        </div>
-                    </div>
-
-                    <div class="mb-16 print-break">
-                        <h3 class="text-xl font-black text-slate-800 mb-6 border-r-8 border-slate-800 pr-4">ملخص اختبارات كراوس-ويبر</h3>
-                        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-                            <div v-for="(test, i) in physicalLog" :key="i" :class="!test.passed ? 'border-red-200 bg-red-50' : 'border-green-200 bg-green-50'" class="p-4 rounded-xl border shadow-sm flex flex-col justify-between h-full card-break">
+                    <div class="grid md:grid-cols-2 gap-8 mb-16">
+                        <div class="bg-white rounded-3xl shadow-xl overflow-hidden border border-slate-100">
+                            <div class="bg-green-50 p-6 border-b border-green-100 flex items-center gap-3">
+                                <div class="w-12 h-12 bg-green-500 rounded-2xl flex items-center justify-center text-white text-2xl shadow-lg">✅</div>
                                 <div>
-                                    <div class="text-xs font-bold uppercase mb-2" :class="!test.passed ? 'text-red-500' : 'text-green-500'">
-                                        {{ !test.passed ? 'فشل (نقطة ضعف)' : 'نجاح (قوة)' }}
+                                    <h3 class="text-xl font-bold text-green-900">المنطقة الخضراء</h3>
+                                    <p class="text-xs text-green-600">التزم بهذه العادات</p>
+                                </div>
+                            </div>
+                            <div class="p-8">
+                                <ul class="space-y-4">
+                                    <li v-for="rec in finalDiagnosis.dos" class="flex items-start gap-4 p-3 rounded-xl hover:bg-slate-50 transition-colors border border-transparent hover:border-slate-100">
+                                        <div class="w-6 h-6 bg-green-100 rounded-full flex items-center justify-center shrink-0 mt-0.5 text-green-600 text-xs font-bold">✓</div>
+                                        <span class="text-slate-700 font-medium leading-relaxed">{{ rec }}</span>
+                                    </li>
+                                </ul>
+                            </div>
+                        </div>
+
+                        <div class="bg-white rounded-3xl shadow-xl overflow-hidden border border-slate-100">
+                            <div class="bg-red-50 p-6 border-b border-red-100 flex items-center gap-3">
+                                <div class="w-12 h-12 bg-red-500 rounded-2xl flex items-center justify-center text-white text-2xl shadow-lg">⛔</div>
+                                <div>
+                                    <h3 class="text-xl font-bold text-red-900">المنطقة الحمراء</h3>
+                                    <p class="text-xs text-red-600">توقف عن هذه الحركات</p>
+                                </div>
+                            </div>
+                            <div class="p-8">
+                                <ul class="space-y-4">
+                                    <li v-for="rec in finalDiagnosis.avoids" class="flex items-start gap-4 p-3 rounded-xl hover:bg-slate-50 transition-colors border border-transparent hover:border-slate-100">
+                                        <div class="w-6 h-6 bg-red-100 rounded-full flex items-center justify-center shrink-0 mt-0.5 text-red-600 text-xs font-bold">✕</div>
+                                        <span class="text-slate-700 font-medium leading-relaxed">{{ rec }}</span>
+                                    </li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="mb-16 print-break">
+                        <h3 class="text-xl font-black text-slate-800 mb-8 border-r-8 border-slate-800 pr-4">سجل الملاحظات التفصيلي (للمراجعة مع الطبيب)</h3>
+                        
+                        <div class="mb-8">
+                            <h4 class="text-md font-bold text-slate-500 mb-4 uppercase tracking-widest flex items-center gap-2"><span>📂</span> أولاً: تحليل التاريخ الطبي</h4>
+                            <div class="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
+                                <div v-for="(item, i) in historyLog" :key="i" class="p-4 border-b border-slate-100 last:border-0 hover:bg-slate-50 transition-colors">
+                                    <div class="flex justify-between items-start gap-4">
+                                        <div class="text-sm font-bold text-slate-700 w-2/3">{{ item.q }}</div>
+                                        <div class="text-sm font-medium text-blue-600 bg-blue-50 px-3 py-1 rounded-full text-center whitespace-nowrap">{{ item.a }}</div>
                                     </div>
-                                    <div class="font-bold text-slate-800 text-sm">{{ test.title }}</div>
+                                    <div class="mt-2 text-xs text-slate-500 leading-relaxed bg-slate-50 p-2 rounded">{{ item.note }}</div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div>
+                            <h4 class="text-md font-bold text-slate-500 mb-4 uppercase tracking-widest flex items-center gap-2"><span>💪</span> ثانياً: نتائج الفحص الجسدي</h4>
+                            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                                <div v-for="(test, i) in physicalLog" :key="i" :class="test.isPain ? 'border-red-200 bg-red-50/30' : 'border-slate-200 bg-white'" class="p-5 rounded-xl border shadow-sm hover:shadow-md transition-all flex flex-col justify-between h-full card-break">
+                                    <div>
+                                        <div class="flex justify-between items-center mb-2">
+                                            <div class="text-xs text-slate-400 font-bold uppercase">اختبار {{ i + 1 }}</div>
+                                            <div class="text-xs font-bold px-2 py-1 rounded" :class="test.isPain ? 'bg-red-100 text-red-600' : 'bg-green-100 text-green-600'">
+                                                {{ test.isPain ? 'إيجابي (ألم)' : 'سلبي (سليم)' }}
+                                            </div>
+                                        </div>
+                                        <div class="font-bold text-slate-800 text-sm mb-2">{{ test.t }}</div>
+                                        <div class="text-xs text-slate-600 mb-3 font-medium">النتيجة: {{ test.r }}</div>
+                                        <div class="text-[10px] text-slate-500 leading-relaxed">{{ test.note.substring(0, 100) }}...</div>
+                                    </div>
                                 </div>
                             </div>
                         </div>
                     </div>
 
-                    <div class="flex justify-center gap-4 no-print pb-12">
-                        <button onclick="window.print()" class="px-8 py-4 bg-slate-800 text-white rounded-xl font-bold hover:bg-slate-900 shadow-lg flex items-center gap-2">
-                            <span>🖨️</span> حفظ التقرير PDF
+                    <div class="flex flex-col md:flex-row justify-center gap-4 no-print pb-12 buttons-container">
+                        <button @click="toggleBig3" class="group px-8 py-5 bg-slate-800 text-white rounded-2xl font-bold hover:bg-slate-900 shadow-xl flex items-center justify-center gap-3 transition-all hover:-translate-y-1">
+                            <span class="text-2xl">🏋️</span>
+                            <div class="text-right">
+                                <div class="text-xs font-light opacity-70">العلاج</div>
+                                <div>شرح تمارين Big 3</div>
+                            </div>
+                        </button>
+                        
+                        <a href="https://www.youtube.com/watch?v=f7HLP96HVNM" target="_blank" class="group px-8 py-5 bg-red-600 text-white rounded-2xl font-bold hover:bg-red-700 shadow-xl flex items-center justify-center gap-3 transition-all hover:-translate-y-1 decoration-0 no-underline">
+                            <span class="text-2xl">📺</span>
+                            <div class="text-right">
+                                <div class="text-xs font-light opacity-70">فيديو</div>
+                                <div>بدء البرنامج العلاجي</div>
+                            </div>
+                        </a>
+                        
+                        <button onclick="window.print()" class="group px-8 py-5 bg-emerald-600 text-white rounded-2xl font-bold hover:bg-emerald-700 shadow-xl flex items-center justify-center gap-3 transition-all hover:-translate-y-1">
+                            <span class="text-2xl">🖨️</span>
+                            <div class="text-right">
+                                <div class="text-xs font-light opacity-70">حفظ</div>
+                                <div>تصدير PDF</div>
+                            </div>
                         </button>
                     </div>
 
@@ -366,43 +399,7 @@
         </div>
     </main>
 
-    <div v-if="showProgram" class="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4" @click.self="toggleProgram">
-        <div class="bg-white w-full max-w-5xl rounded-[40px] p-8 shadow-2xl relative animate-fade-in-up overflow-hidden max-h-[90vh] flex flex-col">
-            <div class="flex justify-between items-center mb-6 pb-4 border-b border-slate-100 shrink-0">
-                <div>
-                    <h2 class="text-3xl font-black text-slate-800">{{ displayedLevel.name }}</h2>
-                    <p class="text-cyan-600 font-bold">التركيز: {{ displayedLevel.focus }}</p>
-                </div>
-                <button @click="toggleProgram" class="bg-slate-100 rounded-full p-3 text-slate-500 hover:bg-slate-200 transition-colors">✕</button>
-            </div>
-            
-            <div class="overflow-y-auto pr-2 space-y-8 flex-1">
-                
-                <div class="bg-slate-900 rounded-2xl p-6 text-center shadow-lg">
-                    <h4 class="text-white font-bold mb-4">📺 فيديو توضيحي للتمارين</h4>
-                    <a :href="displayedLevel.video" target="_blank" class="inline-flex items-center gap-2 bg-red-600 text-white px-8 py-3 rounded-xl font-bold hover:bg-red-700 transition-transform hover:scale-105 no-underline shadow-lg">
-                        مشاهدة الفيديو على TikTok &rarr;
-                    </a>
-                </div>
-
-                <div class="space-y-6">
-                    <div v-for="(ex, index) in displayedLevel.exercises" :key="index" class="bg-slate-50 p-6 rounded-2xl border border-slate-200 hover:border-cyan-200 transition-colors">
-                        <div class="flex items-center gap-3 mb-3">
-                            <div class="w-8 h-8 bg-cyan-600 text-white rounded-full flex items-center justify-center font-bold text-sm shrink-0">{{ index + 1 }}</div>
-                            <div>
-                                <h4 class="font-bold text-slate-800 text-lg">{{ ex.nameAr }}</h4>
-                                <span class="text-xs text-slate-400 font-bold uppercase tracking-wider ltr-text">{{ ex.nameEn }}</span>
-                            </div>
-                        </div>
-                        <p class="text-slate-600 text-sm leading-relaxed pr-11 border-r-2 border-cyan-100 mr-4">{{ ex.instruction }}</p>
-                    </div>
-                </div>
-
-            </div>
-        </div>
-    </div>
-
-    <button @click="toggleGuide" class="guide-btn fixed bottom-8 left-8 z-50 bg-cyan-600 text-white px-6 py-4 rounded-full shadow-2xl hover:bg-cyan-700 transition-all hover:scale-105 flex items-center gap-3 float-anim">
+    <button @click="toggleGuide" class="guide-btn fixed bottom-8 left-8 z-50 bg-blue-600 text-white px-6 py-4 rounded-full shadow-2xl hover:bg-blue-700 transition-all hover:scale-105 flex items-center gap-3 float-anim">
         <span class="text-4xl">📘</span>
         <div class="text-right">
             <div class="text-xs font-light opacity-90">مساعدة</div>
@@ -410,26 +407,58 @@
         </div>
     </button>
 
+    <div v-if="showBig3" class="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4" @click.self="toggleBig3">
+        <div class="bg-white w-full max-w-4xl rounded-[40px] p-10 shadow-2xl relative animate-fade-in-up overflow-hidden">
+            <button @click="toggleBig3" class="absolute top-6 right-6 bg-slate-100 rounded-full p-3 text-slate-500 hover:bg-slate-200 transition-colors">✕</button>
+            <div class="text-center mb-10">
+                <h2 class="text-4xl font-black text-slate-800 mb-2">تمارين Big 3 الأساسية</h2>
+                <p class="text-emerald-600 font-medium">العمود الفقري للعلاج الميكانيكي</p>
+            </div>
+            <div class="grid md:grid-cols-3 gap-8">
+                <div class="bg-slate-50 p-6 rounded-3xl border border-slate-200 text-center hover:shadow-lg transition-shadow">
+                    <div class="w-16 h-16 bg-white rounded-2xl flex items-center justify-center text-4xl mx-auto mb-4 shadow-sm">🦎</div>
+                    <h3 class="font-bold text-xl text-slate-800 mb-2">1. Curl-up</h3>
+                    <p class="text-sm text-slate-500 leading-relaxed">تمرين البطن المعدل. يد تحت الظهر، ركبة مثنية، رفع الرأس والأكتاف فقط قليلاً.</p>
+                </div>
+                <div class="bg-slate-50 p-6 rounded-3xl border border-slate-200 text-center hover:shadow-lg transition-shadow">
+                    <div class="w-16 h-16 bg-white rounded-2xl flex items-center justify-center text-4xl mx-auto mb-4 shadow-sm">🚧</div>
+                    <h3 class="font-bold text-xl text-slate-800 mb-2">2. Side Plank</h3>
+                    <p class="text-sm text-slate-500 leading-relaxed">الجسر الجانبي. استند على كوعك وركبتيك (أو قدميك) لتقوية الجوانب.</p>
+                </div>
+                <div class="bg-slate-50 p-6 rounded-3xl border border-slate-200 text-center hover:shadow-lg transition-shadow">
+                    <div class="w-16 h-16 bg-white rounded-2xl flex items-center justify-center text-4xl mx-auto mb-4 shadow-sm">🐕</div>
+                    <h3 class="font-bold text-xl text-slate-800 mb-2">3. Bird Dog</h3>
+                    <p class="text-sm text-slate-500 leading-relaxed">وضعية اليدين والركبتين. مد يدك اليمنى ورجلك اليسرى للخارج بثبات.</p>
+                </div>
+            </div>
+            <div class="mt-10 text-center">
+                <a href="https://www.youtube.com/watch?v=f7HLP96HVNM" target="_blank" class="inline-block bg-red-600 text-white px-8 py-3 rounded-xl font-bold hover:bg-red-700 shadow-lg transition-transform hover:scale-105 no-underline">
+                    شاهد الفيديو التعليمي الآن 📺
+                </a>
+            </div>
+        </div>
+    </div>
+
     <div v-if="showGuide" class="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4" @click.self="toggleGuide">
-        <div class="bg-white w-full max-w-6xl h-[85vh] rounded-[30px] p-0 shadow-2xl relative animate-fade-in-up border-4 border-cyan-50 overflow-hidden flex flex-col">
+        <div class="bg-white w-full max-w-6xl h-[85vh] rounded-[30px] p-0 shadow-2xl relative animate-fade-in-up border-4 border-blue-50 overflow-hidden flex flex-col">
             <div class="bg-slate-100 p-4 flex justify-between items-center border-b border-slate-200">
                 <h2 class="text-xl font-bold text-slate-700 flex items-center gap-2">
-                    <span>📘</span> دليل المعماري (The Manual)
+                    <span>📘</span> دليل المهندس (The Manual)
                 </h2>
                 <button @click="toggleGuide" class="bg-white rounded-full p-2 text-slate-500 hover:bg-red-50 hover:text-red-500 transition-colors shadow-sm w-10 h-10 flex items-center justify-center font-bold">✕</button>
             </div>
             
             <div class="flex-1 bg-slate-50 relative">
-                <iframe src="https://drive.google.com/file/d/1lLlmpMWEpmlzaxhrhYQVfu_vXWmaxrlb/preview" class="w-full h-full" frameborder="0">
+                <iframe src="https://drive.google.com/file/d/1cHhVanZ4znX0z9OlyysKzvZHMw3eXZ6m/preview" class="w-full h-full" frameborder="0">
                     <div class="flex flex-col items-center justify-center h-full p-10 text-center">
                         <p class="text-slate-500 mb-4">متصفحك لا يدعم عرض PDF مباشرة.</p>
-                        <a href="https://drive.google.com/file/d/1lLlmpMWEpmlzaxhrhYQVfu_vXWmaxrlb/view?usp=sharing" target="_blank" class="bg-blue-600 text-white px-6 py-3 rounded-xl font-bold">تحميل الدليل</a>
+                        <a href="https://drive.google.com/file/d/1cHhVanZ4znX0z9OlyysKzvZHMw3eXZ6m/view?usp=sharing" target="_blank" class="bg-blue-600 text-white px-6 py-3 rounded-xl font-bold">تحميل الدليل</a>
                     </div>
                 </iframe>
             </div>
 
             <div class="bg-white p-4 border-t border-slate-200 text-center md:text-right">
-                <a href="https://drive.google.com/file/d/1lLlmpMWEpmlzaxhrhYQVfu_vXWmaxrlb/view?usp=sharing" target="_blank" class="inline-flex items-center gap-2 text-blue-600 font-bold hover:underline">
+                <a href="https://drive.google.com/file/d/1cHhVanZ4znX0z9OlyysKzvZHMw3eXZ6m/view?usp=sharing" target="_blank" class="inline-flex items-center gap-2 text-blue-600 font-bold hover:underline">
                     <span>📥</span> تحميل ملف PDF
                 </a>
             </div>
@@ -449,222 +478,353 @@ createApp({
             physicalIndex: 0,
             user: { name: '', age: '' },
             disclaimerAccepted: false,
-            safetyPassed: true,
-            
-            // Logs
-            failedTests: [], 
-            physicalLog: [],
-            currentTestResult: null,
+            evidenceLog: [],
+            historyLog: [],   
+            physicalLog: [],  
             lastAnswerNote: null,
-            showProgram: false,
-            showGuide: false, // New state
+            currentTestResult: null,
+            showBig3: false,
+            showGuide: false, // New State for Guide Modal
             
-            // Level Display Logic
-            displayedLevel: null,
+            // Accumulated lists
+            globalDos: [],
+            globalAvoids: [],
 
-            // === 1. SAFETY CHECK ===
+            // === 1. HISTORY QUESTIONS (Extensive) ===
             historyQuestions: [
-                { text: 'هل الألم حاد جداً لدرجة تمنعك من الحركة تماماً؟', options: [{ label: 'نعم', flag: true, note: 'ألم حاد يتطلب راحة.' }, { label: 'لا', flag: false, note: 'يمكنك المتابعة.' }] },
-                { text: 'هل أجريت جراحة بالظهر مؤخراً (3 أشهر)؟', options: [{ label: 'نعم', flag: true, note: 'استشر جراحك.' }, { label: 'لا', flag: false, note: 'آمن.' }] },
-                { text: 'هل هناك تنميل وضعف شديد في الساقين؟', options: [{ label: 'نعم', flag: true, note: 'علامة عصبية حمراء.' }, { label: 'لا', flag: false, note: 'آمن.' }] }
+                { 
+                    id: 'q1', 
+                    text: '1. هل تتغير حدة الألم خلال اليوم؟ (هل تمر عليك ساعات تكون فيها بلا ألم؟)', 
+                    options: [ 
+                        { label: 'نعم، الألم يتغير وتوجد فترات راحة', trigger: 'Mechanical Pain', note: 'إذا كان ألمك يتغير، فهناك سبب محدد. فهم هذا السبب يضمن النجاح. سنعلمك كيفية تحديد مسببات الألم لديك وتجنبها لتقليل الأعراض.' }, 
+                        { label: 'لا، الألم ثابت بنفس الحدة 24 ساعة', trigger: 'Non-Mechanical', note: 'الألم المستمر دون تغيير قد يشير لسبب غير ميكانيكي. ينصح بشدة بزيارة طبيب لإجراء فحوصات دقيقة لاستبعاد الأسباب المرضية الأخرى.' } 
+                    ] 
+                },
+                { 
+                    id: 'q2', 
+                    text: '2. عند التقلب في السرير، هل تواجه "نغزات" مؤلمة مفاجئة؟', 
+                    options: [ 
+                        { label: 'نعم، أشعر بنغزات حادة', trigger: 'Spinal Instability', note: 'إذا أجبت بنعم، فقد تعاني من عدم استقرار العمود الفقري. يمكنك القضاء على هذه النغزات عن طريق "تصلب" عضلات ظهرك بتمارين التثبيت. تجنب تمارين الإطالة التي تزيد من ارتخاء المفاصل.' }, 
+                        { label: 'لا', trigger: null, note: 'عدم وجود نغزات مؤشر جيد على أن الأربطة والمفاصل تحافظ على ثباتها بشكل معقول.' } 
+                    ] 
+                },
+                { 
+                    id: 'q3', 
+                    text: '3. ما الذي يجعل ألمك أسوأ؟ (هل هو نشاط محدد؟)', 
+                    options: [ 
+                        { label: 'نشاط محدد (مثل كرة السلة/رفع الأثقال)', trigger: 'Specific Trigger', note: 'إذا استطعت تحديد نشاط، فالألم له "محفز". الحل هو تجنب المحفز. لا داعي لترك الرياضة تماماً، بل يجب تعديل حركتك (مثل تجنب انحناء الظهر أثناء القرفصاء) لإلغاء المحفز.' }, 
+                        { label: 'الألم عشوائي وغير محدد', trigger: null, note: 'الألم العشوائي يتطلب منك أن تكون "محققاً" وتراقب حركاتك اليومية بدقة أكبر للعثور على المحفز الخفي.' } 
+                    ] 
+                },
+                { 
+                    id: 'q4', 
+                    text: '4. كيف بدأ الألم؟ هل كان صدمة أم تدريجياً؟', 
+                    options: [ 
+                        { label: 'حادث / سقوط / صدمة', trigger: 'Traumatic Origin', note: 'الألم الناتج عن حادث غالباً ما يكون ميكانيكياً. الأنسجة تضررت، لكن وضعيات تخفيف الألم متاحة وتساعد على الشفاء إذا التزمت بها.' }, 
+                        { label: 'ظهر ببطء وتزايد (غير محدد)', trigger: 'Cumulative Load', note: 'هذا يشير إلى أن الألم مستمر في الازدياد بسبب "الحمل التراكمي". عاداتك اليومية الخاطئة تراكمت حتى تجاوزت حد التحمل.' } 
+                    ] 
+                },
+                { 
+                    id: 'q5', 
+                    text: '5. هل لديك تاريخ مع هشاشة العظام؟', 
+                    options: [ 
+                        { label: 'نعم', trigger: 'Bone Fragility', note: 'هناك مخاوف من هشاشة العظام. اختر التمارين التي تجنب العمود الفقري أحمال الضغط (مثل المشي بظهر مستقيم والسباحة). تجنب الغولف والتمارين التي تتطلب انحناءً.' }, 
+                        { label: 'لا', trigger: null, note: 'جيد. هذا يستبعد القلق من الكسور الانضغاطية المرتبطة بالهشاشة.' } 
+                    ] 
+                },
+                { 
+                    id: 'q6', 
+                    text: '6. هل الألم في أسوأ حالاته فور الاستيقاظ صباحاً؟', 
+                    options: [ 
+                        { label: 'نعم، أسوأ شيء في الصباح', trigger: 'Bed/Sleep Issue', note: 'قد يكون السرير هو السبب. إذا كانت المرتبة لا تدعم انحناءات ظهرك، ستستيقظ متألماً. تجنب وضعية "الجنين" لأنها تبقي الديسك مضغوطاً طوال الليل.' }, 
+                        { label: 'لا، يزداد لاحقاً', trigger: null, note: 'إذا لم يكن هناك ألم صباحي، فالمرتبة سليمة غالباً. المشكلة تكمن في طريقة جلوسك أو حركتك خلال النهار.' } 
+                    ] 
+                },
+                { 
+                    id: 'q7', 
+                    text: '7. هل يزداد الألم تدريجياً كلما مر اليوم؟', 
+                    options: [ 
+                        { label: 'نعم، يزداد مع الوقت', trigger: 'Cumulative Loading', note: 'هذا نمط "الحمل التراكمي". لكل منا حد للتحمل. الحل هو استراتيجية "فترات الراحة" لتقسيم اليوم وتجديد قدرة الظهر قبل أن يبدأ الألم.' }, 
+                        { label: 'لا', trigger: null, note: 'هذا يعني أن الألم مرتبط بحركات محددة وليس مجرد إرهاق عام للأنسجة.' } 
+                    ] 
+                },
+                { 
+                    id: 'q8', 
+                    text: '8. هل يتركز الألم في منطقة منتصف الظهر؟', 
+                    options: [ 
+                        { label: 'نعم، في المنتصف', trigger: 'Thoracolumbar Hinge', note: 'ألم منتصف الظهر يعني غالباً أنك "تكسر" ظهرك من المنتصف (Hinging) بدلاً من استخدام الحوض. سنعلمك كيفية الحركة الصحيحة من الورك.' }, 
+                        { label: 'لا، أسفل الظهر', trigger: null, note: 'الألم في أسفل الظهر (المنطقة القطنية) هو الأكثر شيوعاً وعادة ما يرتبط بالديسك أو المفاصل.' } 
+                    ] 
+                },
+                { 
+                    id: 'q9', 
+                    text: '9. هل يمتد الألم إلى الأرداف والساقين؟', 
+                    options: [ 
+                        { label: 'نعم، يمتد للساقين', trigger: 'Nerve Root Tension', note: 'هذا الألم ناتج غالباً عن جذر عصبي محشور (Sciatica). النشاط الذي يسبب انحناء الظهر يضغط الديسك على العصب. تصحيح الوضعية يزيل الضغط.' }, 
+                        { label: 'لا، في الظهر فقط', trigger: null, note: 'انحصار الألم في الظهر مؤشر جيد، يعني أن الأعصاب الجذرية غير متأثرة حالياً.' } 
+                    ] 
+                },
+                { 
+                    id: 'q10', 
+                    text: '10. هل يزداد الألم مع المشي السريع أم يقل؟', 
+                    options: [ 
+                        { label: 'يقل مع المشي السريع', trigger: 'Disc Responder', note: 'أنت تستجيب جيداً للمشي (مشكلة ديسك). المشي السريع مع تحريك الذراعين يعتبر علاجاً لك. تجنب المشي البطيء (التسكع) لأنه مؤذٍ.' }, 
+                        { label: 'يزيد مع المشي', trigger: 'Stenosis Responder', note: 'هذا يشير لتضيق القناة (Stenosis). المشي يراكم الضغط. ستحتاج لبرنامج مشي مصحح بفترات قصيرة جداً تتخللها راحة.' } 
+                    ] 
+                }
             ],
 
-            // === 2. KRAUS-WEBER TESTS (Deep Explanation) ===
+            // === 2. PHYSICAL TESTS (Extensive - Using .png) ===
             physicalTests: [
                 { 
-                    id: 'kw1', title: '1. البطن والساقين ممدودتين (Abs+Psoas)', image: 'img/test1.jpg', 
-                    instruction: `<ul><li>استلقِ على ظهرك، يديك خلف رقبتك، وساقيك ممدودتين.</li><li>ثبت قدميك (تحت كنبة أو بمساعدة شخص).</li><li>حاول الجلوس حتى وضعية الجلوس الكاملة.</li></ul>`, 
-                    question: 'هل نجحت في الجلوس؟', 
+                    id: 't1', title: '1. اختبار ضغط الكرسي (Compression)', image: 'img/test1.png', 
+                    instruction: `<ul><li>اجلس على كرسي وأمسك حافة المقعد.</li><li><strong>الوضع 1 (مستقيم):</strong> اجلس بظهر مستقيم واسحب المقعد للأعلى لتضغط العمود الفقري.</li><li><strong>الوضع 2 (متراخي):</strong> ارخِ ظهرك (تحدب) واسحب المقعد للأعلى.</li></ul>`, 
+                    question: 'أي وضعية سببت الألم الأكبر؟', 
                     options: [ 
                         { 
-                            label: 'نعم', passed: true, 
-                            feedback: 'ممتاز. هذا يعني أن عضلات البطن (Abs) وعضلات الورك (Psoas) تعملان بتناغم جيد لرفع جذعك ضد الجاذبية.',
-                            dos: ['حافظ على هذا المستوى'], 
-                            avoids: [] 
+                            label: 'الوضع المتراخي (Slouched) مؤلم', diagnosis: 'Flexion Intolerance', 
+                            feedback: 'ألمك يتفاقم مع الجلوس المتراخي والانحناء. السبب المحتمل هو "بروز ديسك".', 
+                            dos: ['مارس تقنية "Shortstop Squat" لكل انحناء', 'طبق مبادئ نظافة العمود الفقري', 'تمارين Big 3'], 
+                            avoids: ['تجنب انحناء العمود الفقري عند التقاط الأشياء', 'تجنب الجلوس الطويل'] 
                         }, 
                         { 
-                            label: 'لا', passed: false, 
-                            feedback: 'لا تقلق، هذا شائع. فشل هذا الاختبار يعني أن عضلات البطن لديك ليست قوية بما يكفي لرفع وزن جذعك، أو أن عضلات الورك ضعيفة جداً للمساعدة. هذا الضعف يضع ضغطاً مباشراً على فقرات الظهر.', 
-                            dos: ['تمارين المستوى 1 لتقوية البطن تدريجياً'], 
-                            avoids: ['تمارين البطن الكاملة (Full Sit-ups) حالياً لأنها قد تؤذي ظهرك'] 
-                        } 
+                            label: 'الوضع المستقيم (Tall) مؤلم', diagnosis: 'Compression Intolerance', 
+                            feedback: 'ألمك ناتج عن الضغط العمودي، قد يكون هناك إصابة في "صفائح الفقرات".', 
+                            dos: ['قلل الأحمال المحمولة', 'مارس "تصلب الجذع" (Bracing) لتخفيف الألم'], 
+                            avoids: ['حمل الأوزان الثقيلة أمام الجسم', 'الجري والقفز', 'التعرض للاهتزازات'] 
+                        }, 
+                        { label: 'لا يوجد ألم', diagnosis: null, feedback: 'ممتاز. الضغط الثابت ليس المحفز الرئيسي.', dos: ['استمر في الحركة السليمة'], avoids: [] } 
                     ] 
                 },
-                { 
-                    id: 'kw2', title: '2. البطن مع ثني الركبة (Pure Abs)', image: 'img/test2.jpg', 
-                    instruction: `<ul><li>استلقِ على ظهرك واثنِ ركبتيك.</li><li>ثبت قدميك.</li><li>حاول الجلوس بالكامل دون استخدام اليدين.</li></ul>`, 
-                    question: 'هل نجحت؟', 
-                    options: [ 
+                {
+                    id: 't2', title: '2. اختبار صدمة الكعب (Heel Drop)', image: 'img/test2.png',
+                    instruction: `<ul><li>قف مستقيماً وارتفع على رؤوس أصابعك ثم اسقط بقوة على كعبيك.</li><li>كرر وأنت تنظر للأسفل (فحص العصب).</li></ul>`,
+                    question: 'ما هي ملاحظتك الأساسية؟',
+                    options: [
                         { 
-                            label: 'نعم', passed: true, 
-                            feedback: 'رائع. ثني الركبتين يلغي مساعدة الساقين، لذا نجاحك هنا يعني أن عضلات بطنك "المعزولة" قوية بما يكفي.', 
-                            dos: [], 
-                            avoids: [] 
-                        }, 
+                            label: 'الألم زاد عند النظر للأسفل', diagnosis: 'Nerve Tension', 
+                            feedback: 'الألم يزداد مع انحناء الرقبة، مما يعني وجود توتر في الحبل الشوكي والجذور العصبية.', 
+                            dos: ['ابحث عن وضعية رقبة مريحة', 'قلل من بروز الديسك (Tummy Lie)', 'تحريك العصب لاحقاً'], 
+                            avoids: ['تجنب تمارين الإطالة (Stretching) حالياً'] 
+                        },
                         { 
-                            label: 'لا', passed: false, 
-                            feedback: 'هذا اكتشاف مهم جداً. فشلك هنا يعني أن عضلات بطنك وحدها (بدون مساعدة الساقين) لا تستطيع دعم عمودك الفقري. هذا الضعف هو سبب رئيسي للتعب اليومي في الظهر.', 
-                            dos: ['تمرين البطن الجزئي (Crunch) لتقوية العضلة المستقيمة'], 
-                            avoids: ['حمل الأوزان وأنت واقف لفترات طويلة'] 
-                        } 
-                    ] 
-                },
-                { 
-                    id: 'kw3', title: '3. رفع الساقين (Lower Abs)', image: 'img/test3.jpg', 
-                    instruction: `<ul><li>استلقِ على ظهرك، ساقيك ممدودتين.</li><li>ارفع ساقيك 25 سم عن الأرض لمدة 10 ثوانٍ.</li><li>يجب ألا يتقوس ظهرك.</li></ul>`, 
-                    question: 'هل صمدت 10 ثوانٍ دون تقوس الظهر؟', 
-                    options: [ 
-                        { 
-                            label: 'نعم', passed: true, 
-                            feedback: 'ثبات ممتاز. عضلات أسفل البطن قوية وتمنع الحوض من الميلان.', 
-                            dos: [], 
-                            avoids: [] 
-                        }, 
-                        { 
-                            label: 'لا', passed: false, 
-                            feedback: 'عندما رفعت ساقيك، تقوس ظهرك للأعلى، صحيح؟ هذا يعني أن عضلات أسفل البطن ضعيفة وفشلت في تثبيت الحوض. هذا الضعف يسبب "ميلان الحوض الأمامي" وآلام أسفل الظهر عند الوقوف.', 
-                            dos: ['تمرين رفع ركبة واحدة للصدر'], 
-                            avoids: ['رفع الساقين المزدوج لأنه يضغط الفقرات حالياً'] 
-                        } 
-                    ] 
-                },
-                { 
-                    id: 'kw4', title: '4. رفع الظهر العلوي', image: 'img/test4.jpg', 
-                    instruction: `<ul><li>استلقِ على بطنك (وسادة تحت الحوض).</li><li>ارفع رأسك وكتفيك عن الأرض لمدة 10 ثوانٍ.</li></ul>`, 
-                    question: 'هل صمدت 10 ثوانٍ؟', 
-                    options: [ 
-                        { 
-                            label: 'نعم', passed: true, 
-                            feedback: 'عضلات الظهر العلوية قوية وتدعم الرقبة جيداً.', 
-                            dos: [], 
-                            avoids: [] 
-                        }, 
-                        { 
-                            label: 'لا', passed: false, 
-                            feedback: 'ضعف عضلات الظهر العلوية شائع جداً بسبب استخدام الهواتف والكمبيوتر. هذا الضعف يسبب التحدب ويزيد الحمل على الرقبة وأسفل الظهر للتعويض.', 
-                            dos: ['تمرين وضعية الكوبرا البسيطة', 'تمارين فتح الصدر'], 
-                            avoids: ['الجلوس الطويل بظهر منحني'] 
-                        } 
-                    ] 
-                },
-                { 
-                    id: 'kw5', title: '5. رفع الظهر السفلي', image: 'img/test5.jpg', 
-                    instruction: `<ul><li>استلقِ على بطنك.</li><li>ارفع ساقيك المستقيمتين معاً لمدة 10 ثوانٍ.</li></ul>`, 
-                    question: 'هل نجحت؟', 
-                    options: [ 
-                        { 
-                            label: 'نعم', passed: true, 
-                            feedback: 'عضلات أسفل الظهر قوية وتعمل كدعامات جيدة للعمود الفقري.', 
-                            dos: [], 
-                            avoids: [] 
-                        }, 
-                        { 
-                            label: 'لا', passed: false, 
-                            feedback: 'عضلات أسفل الظهر هي "حبال التثبيت" للعمود الفقري. ضعفها يعني أن عمودك الفقري يرتكز على الأربطة والعظام فقط، مما يسبب الألم عند الوقوف أو المشي.', 
-                            dos: ['تمرين القطة والجمل (Cat-Cow) لتقوية المنطقة بلطف'], 
-                            avoids: ['الانحناء المفاجئ لالتقاط الأشياء'] 
-                        } 
-                    ] 
-                },
-                { 
-                    id: 'kw6', title: '6. المرونة (Flexibility)', image: 'img/test6.jpg', 
-                    instruction: `<ul><li>قف مستقيماً.</li><li>انحنِ وحاول لمس الأرض بأطراف أصابعك دون ثني الركبة.</li></ul>`, 
-                    question: 'هل لمست الأرض؟', 
-                    options: [ 
-                        { 
-                            label: 'نعم', passed: true, 
-                            feedback: 'مرونة طبيعية ممتازة. عضلاتك ليست مشدودة بشكل يعيق الحركة.', 
-                            dos: [], 
-                            avoids: [] 
-                        }, 
-                        { 
-                            label: 'لا', passed: false, 
-                            feedback: 'هذا يعني أن لديك "تشنجاً" (Stiffness) في العضلات الخلفية (الظهر والفخذين). تخيل عمودك الفقري كقوس مشدود جداً؛ هذا الشد يضغط الغضاريف طوال اليوم حتى وأنت مرتاح.', 
-                            dos: ['تمارين الاسترخاء والتنفس (المستوى 1) لفك التشنج'], 
-                            avoids: ['تمارين القوة العنيفة قبل استعادة المرونة'] 
-                        } 
-                    ] 
-                }
-            ],
-
-            // === 3. DETAILED EXERCISE DATABASE ===
-            levels: {
-                1: {
-                    id: 1, name: "المستوى الأول: الاسترخاء (Relaxation)", focus: "فك التشنج والتنفس",
-                    video: "https://www.tiktok.com/@rafiqbens/video/7433507833930452229",
-                    exercises: [
-                        { nameEn: "Diaphragmatic Deep Breathing", nameAr: "التنفس العميق من الحجاب الحاجز", instruction: "استلقِ على ظهرك، واثنِ ركبتيك. تنفس بعمق من أنفك حتى ترتفع معدتك (وليس صدرك). ازفر ببطء من فمك." },
-                        { nameEn: "Deep Breathing with Shoulder Shrugs", nameAr: "التنفس مع هز الأكتاف", instruction: "أثناء الشهيق، ارفع كتفيك نحو أذنيك واثبت لحظة. أثناء الزفير، أرخِ كتفيك تماماً للأسفل." },
-                        { nameEn: "Frog-Leg Release", nameAr: "استرخاء وضعية الضفدع", instruction: "استلقِ على ظهرك. دع ركبتك اليمنى تسقط للجانب (كالضفدع). حرك قدمك للأسفل لتمديد الساق، ثم أعدها لوضعية البداية. كرر لليسار." },
-                        { nameEn: "Head Rotation", nameAr: "تدوير الرأس", instruction: "استلقِ باسترخاء. أدر رأسك ببطء لليسار ثم لليمين. الهدف هو إرخاء عضلات الرقبة المتشنجة." },
-                        { nameEn: "Knee-to-Chest Leg Release", nameAr: "ضم الركبة ثم الاسترخاء", instruction: "ارفع ركبتك لصدرك، ثم دعها تسقط للجانب (وضعية الضفدع) وتنزلق للأسفل حتى تستقيم الساق." },
-                        { nameEn: "Side Slide", nameAr: "الانزلاق الجانبي", instruction: "نم على جنبك. زحلق ساقك العليا نحو صدرك (وهي تلامس الساق السفلى)، ثم زحلقها للأسفل حتى تستقيم." },
-                        { nameEn: "Buttocks Squeeze", nameAr: "عصر العضلات الألوية", instruction: "استلقِ على بطنك (مع وسادة تحت الحوض). اعصر عضلات المؤخرة بقوة لمدة 3 ثوانٍ ثم استرخِ." }
+                            label: 'السقوط مؤلم دائماً', diagnosis: 'Load Intolerance', 
+                            feedback: 'حساسية عالية للصدمات الديناميكية.', 
+                            dos: ['المشي بأحذية مريحة تمتص الصدمات', 'المشي على أسطح ناعمة'], 
+                            avoids: ['الجري', 'القفز', 'المشي على الأرصفة الصلبة لفترات طويلة'] 
+                        },
+                        { label: 'لا ألم يذكر', diagnosis: null, feedback: 'جيد.', dos: [], avoids: [] }
                     ]
                 },
-                2: {
-                    id: 2, name: "المستوى الثاني: تقوية أولية (Mobilization)", focus: "تحريك الحوض وتقوية الجذع",
-                    video: "https://www.tiktok.com/@rafiqbens/video/7433508131923135750",
-                    exercises: [
-                        { nameEn: "Double Knee to Chest", nameAr: "ضم الركبتين للصدر", instruction: "استلقِ على ظهرك. ضم كلتا ركبتيك إلى صدرك قدر الإمكان. أنزلهما ببطء." },
-                        { nameEn: "Cat Back-Camel Back", nameAr: "تمرين القطة والجمل", instruction: "على يديك وركبتيك. قوس ظهرك للأعلى (كقطة غاضبة) وأسقط رأسك. ثم اعكس الحركة (كجمل) وارفع رأسك." },
-                        { nameEn: "Partial Sit-Up", nameAr: "تمرين البطن الجزئي", instruction: "استلقِ مع ثني الركبتين. زحلق يديك على فخذيك وارفع رأسك وكتفيك فقط عن الأرض. لا تقم بجلوس كامل." },
-                        { nameEn: "Pectoral Stretch", nameAr: "إطالة عضلات الصدر", instruction: "من وضعية الركوع، مد يديك للأمام بعيداً على الأرض، وأنزل صدرك نحو الأرض لتشعر بالإطالة." },
-                        { nameEn: "Seated Forward Bend", nameAr: "الانحناء الأمامي (جالس)", instruction: "اجلس على كرسي. انحنِ بجذعك للأمام بين ركبتيك ودع ذراعيك تتدليان نحو الأرض." },
-                        { nameEn: "Bicycle Hamstring Stretch", nameAr: "إطالة الفخذ الخلفي (الدراجة)", instruction: "استلقِ على ظهرك. ارفع ساقاً واحدة، افردها للأعلى وأصابع قدمك تشير للسقف. أنزلها مستقيمة." },
-                        { nameEn: "Bicycle Calf Stretch", nameAr: "إطالة الساق (الدراجة)", instruction: "نفس التمرين السابق، لكن اجعل كعب قدمك يشير للسقف (فلكس) لتمديد بطة الساق." }
+                {
+                    id: 't3', title: '3. اختبار الاستلقاء (Tummy Lie)', image: 'img/test3.png',
+                    instruction: `<ul><li>استلقِ على بطنك لمدة 3 دقائق.</li><li>راقب الألم.</li></ul>`,
+                    question: 'الشعور بعد 3 دقائق؟',
+                    options: [
+                        { 
+                            label: 'الألم اختفى أو قل', diagnosis: 'Disc Bulge Responder', 
+                            feedback: 'هذه الوضعية تريحك لأنها تدفع الديسك لمكانه. هذا يؤكد أن الانحناء هو عدوك.', 
+                            dos: ['استخدم هذا الوضع كعلاج "إطفاء ألم" يومي', 'المشي السريع'], 
+                            avoids: ['الجلوس فوراً بعد هذا التمرين', 'تمارين البطن التقليدية'] 
+                        },
+                        { 
+                            label: 'الألم ازداد', diagnosis: 'Extension Intolerance', 
+                            feedback: 'الألم ازداد، مما يعني أنك لا تتحمل التمدد (Extension).', 
+                            dos: ['ضع وسادة تحت بطنك عند النوم لتقليل التقوس'], 
+                            avoids: ['النوم على البطن دون وسادة', 'تمرين الكوبرا'] 
+                        }
                     ]
                 },
-                3: {
-                    id: 3, name: "المستوى الثالث: متقدم (Maintenance)", focus: "المرونة والقوة الكاملة",
-                    video: "https://www.tiktok.com/@rafiqbens/video/7433509123074854150",
-                    exercises: [
-                        { nameEn: "Full Sit-Up", nameAr: "تمرين البطن الكامل", instruction: "استلقِ مع تثبيت قدميك تحت كنبة. ضع يديك خلف رقبتك واجلس جلسة كاملة." },
-                        { nameEn: "Seated Side Bend", nameAr: "الانحناء الجانبي (جالس)", instruction: "اجلس على كرسي. انحنِ بجذعك للجانب الأيمن محاولاً لمس الأرض بيدك، ثم كرر لليسار." },
-                        { nameEn: "Straight Leg Raise Hamstring", nameAr: "رفع الساق المستقيمة (فخذ)", instruction: "ارفع ساقك المستقيمة للأعلى قدر الإمكان وأصابعك مفرودة (Pointing)." },
-                        { nameEn: "Straight Leg Raise Calf", nameAr: "رفع الساق المستقيمة (بطة الساق)", instruction: "ارفع ساقك المستقيمة للأعلى مع دفع الكعب للأعلى (Flexing) لشد الساق الخلفية." },
-                        { nameEn: "Diver’s Bend", nameAr: "انحناء الغواص", instruction: "قف، اشبك يديك خلف ظهرك. انحنِ للأمام من الحوض وارفع يديك المشبوكتين للأعلى خلفك." },
-                        { nameEn: "Wall Calf Stretch", nameAr: "إطالة الساق على الحائط", instruction: "قف أمام حائط. ضع يديك عليه. ارجع بساق واحدة للخلف مع إبقاء الكعب على الأرض لشد بطة الساق." },
-                        { nameEn: "Floor Touch", nameAr: "لمس الأرض", instruction: "قف باستقامة. انحنِ للأمام وحاول لمس الأرض بأطراف أصابعك مع الحفاظ على الركبتين مفرودتين." }
+                {
+                    id: 't4', title: '4. اختبار التمدد والدوران', image: 'img/test4.png',
+                    instruction: `<ul><li>قف وقوس ظهرك للخلف قليلاً ثم لف جذعك يميناً ويساراً.</li></ul>`,
+                    question: 'النتيجة:',
+                    options: [
+                        { 
+                            label: 'ألم عند الدوران', diagnosis: 'Facet Joint Pathology', 
+                            feedback: 'الألم مع الدوران للخلف يشير لمشكلة في المفاصل الخلفية (Facet Joints).', 
+                            dos: ['تعلم الدوران باستخدام الورك وليس الظهر'], 
+                            avoids: ['حركات الفتل (Twisting)', 'مد اليد للخلف لجلب الأشياء'] 
+                        },
+                        { label: 'لا ألم', diagnosis: null, feedback: 'سليم.', dos: [], avoids: [] }
+                    ]
+                },
+                {
+                    id: 't5', title: '5. اختبار بلانك الجدار', image: 'img/test5.png',
+                    instruction: `<ul><li>استند بمرفقيك على الجدار. حرك ظهرك ببطء للبحث عن وضعية بلا ألم.</li></ul>`,
+                    question: 'هل وجدت وضعية مريحة؟',
+                    options: [
+                        { 
+                            label: 'نعم، وجدت وضعية مريحة', diagnosis: 'Postural Responder', 
+                            feedback: 'هذا يثبت أن ألمك ميكانيكي ويمكن علاجه بتصحيح الوضعية.', 
+                            dos: ['احفظ هذه الوضعية "المحايدة" وطبقها في حياتك', 'عدل مقعد السيارة'], 
+                            avoids: ['البقاء في وضعية واحدة لفترة طويلة (سواء جلوس أو وقوف)'] 
+                        },
+                        { 
+                            label: 'لا، مؤلم دائماً', diagnosis: 'High Sensitivity', 
+                            feedback: 'أنسجتك متهيجة جداً حالياً.', 
+                            dos: ['الراحة القصيرة المتكررة', 'المشي القصير جداً'], 
+                            avoids: ['أي تمرين عنيف حالياً', 'الاستمرار في النشاط المؤلم'] 
+                        }
+                    ]
+                },
+                {
+                    id: 't6', title: '6. اختبار حمل الوزن', image: 'img/test6.png',
+                    instruction: `<ul><li>احمل وزناً خفيفاً (2-3 كجم) عند الحزام.</li><li>مد ذراعيك للأمام وأنت تحمل الوزن.</li><li>هل ظهر الألم؟ جرب شد بطنك (Bracing). هل اختفى؟</li></ul>`,
+                    question: 'تأثير حمل الوزن بعيداً عن الجسم؟',
+                    options: [
+                        { 
+                            label: 'يسبب ألماً فورياً', diagnosis: 'Load Intolerance', 
+                            feedback: 'ظهرك لا يتحمل "عزم الدوران". أي حمل بعيد عن الجسم يضرك.', 
+                            dos: ['احمل الأشياء ملتصقة بصدرك تماماً', 'اطلب المساعدة في حمل الأشياء'], 
+                            avoids: ['مد اليد لجلب أشياء بعيدة', 'فتح النوافذ بمد الذراع'] 
+                        },
+                        { 
+                            label: 'الشد العضلي منع الألم', diagnosis: 'Stabilization Responder', 
+                            feedback: 'يمكنك حماية ظهرك إذا قمت بـ "تصلب الجذع" قبل الحركة.', 
+                            dos: ['تعلم التصلب (Bracing) قبل أي حركة', 'تمارين Big 3'], 
+                            avoids: ['الرفع أو الحركة وعضلات بطنك مرتخية'] 
+                        }
+                    ]
+                },
+                {
+                    id: 't7', title: '7. اختبار حركة الحوض', image: 'img/test7.png',
+                    instruction: `<ul><li>ضع عصا خفيفة على كتفيك.</li><li>حاول تحريك حوضك فقط (مؤخرتك) للأمام والخلف.</li><li>هل حركة العمود الفقري هذه تثير الألم؟</li></ul>`,
+                    question: 'هل حركة أسفل الظهر مؤلمة؟',
+                    options: [
+                        { 
+                            label: 'نعم، الحركة مؤلمة', diagnosis: 'Motion Intolerance', 
+                            feedback: 'أنت تعاني من عدم تحمل الحركة (Motion Intolerance). ظهرك يريد أن يبقى ثابتاً.', 
+                            dos: ['ثبت الظهر وحرك الورك (Hip Hinge)', 'ركز حركتك في الأكتاف والوركين'], 
+                            avoids: ['تمارين تحريك الظهر (مثل Cat-Camel) بقوة', 'الرقص الذي يتطلب حركة خصر'] 
+                        },
+                        { label: 'لا', diagnosis: null, feedback: 'جيد.', dos: [], avoids: [] }
+                    ]
+                },
+                {
+                    id: 't8', title: '8. فحص وضعية الوقوف', image: 'img/test8.png',
+                    instruction: `<ul><li>تحسس عضلات ظهرك أثناء الوقوف. هل هي متشنجة؟ حاول تعديل وقفتك للاسترخاء.</li></ul>`,
+                    question: 'هل الاسترخاء ممكن؟',
+                    options: [
+                        { 
+                            label: 'نعم، بتعديل الوقفة', diagnosis: 'Postural Strain', 
+                            feedback: 'ألمك سببه "الإجهاد الوضعي". عضلاتك تعمل طوال الوقت بسبب وقفة خاطئة.', 
+                            dos: ['صحح وقفتك باستمرار (صدر للأعلى)', 'ارفع ذقنك للخلف قليلاً'], 
+                            avoids: ['الوقوف ببطن مدفوع للأمام', 'انحناء الرقبة للنظر للهاتف'] 
+                        },
+                        { label: 'لا تغيير', diagnosis: null, feedback: 'طبيعي.', dos: [], avoids: [] }
                     ]
                 }
-            }
+            ]
         }
     },
     computed: {
         currentHistoryQ() { return this.historyQuestions[this.historyIndex]; },
         currentPhysicalTest() { return this.physicalTests[this.physicalIndex]; },
         progress() {
-            const total = 1 + this.historyQuestions.length + this.physicalTests.length;
-            let current = this.currentPhase === 'intro' ? 0 : this.currentPhase === 'history' ? 1 + this.historyIndex : 1 + this.historyQuestions.length + this.physicalIndex;
-            return (current / total) * 100;
+            const totalSteps = 1 + this.historyQuestions.length + this.physicalTests.length;
+            let current = 0;
+            if(this.currentPhase === 'intro') current = 0;
+            else if(this.currentPhase === 'history') current = 1 + (this.historyIndex > -1 ? this.historyIndex : 0);
+            else if(this.currentPhase === 'physical') current = 1 + this.historyQuestions.length + this.physicalIndex;
+            else current = totalSteps;
+            return (current / totalSteps) * 100;
         },
-        failedTestsCount() {
-            return this.physicalLog.filter(t => t.isPain).length;
-        },
-        diagnosisTitle() { return this.failedTestsCount > 0 ? "تحت المستوى (Below Par)" : "مستوى الصيانة (Good)"; },
-        diagnosisSubtitle() { return this.failedTestsCount > 0 ? `فشلت في ${this.failedTestsCount} من أصل 6 اختبارات. عضلاتك "Soft Tissue" تحتاج لإعادة تأهيل.` : "نجحت في جميع الاختبارات. يمكنك الحفاظ على صحة ظهرك بالمستوى المتقدم."; },
-        // Default recommendation based on logic
-        recommendedLevel() { return this.failedTestsCount > 0 ? this.levels[1] : this.levels[2]; } 
+        finalDiagnosis() {
+            // Priority Essentials based on Patterns (Deduplicated logic)
+            let flexCount = this.evidenceLog.filter(e => e.type.includes('Flexion') || e.type.includes('Disc')).length;
+            let extCount = this.evidenceLog.filter(e => e.type.includes('Extension') || e.type.includes('Facet')).length;
+            let nerveCount = this.evidenceLog.filter(e => e.type.includes('Nerve') || e.type.includes('Tension')).length;
+            let loadCount = this.evidenceLog.filter(e => e.type.includes('Load') || e.type.includes('Compression')).length;
+            let instabilityCount = this.evidenceLog.filter(e => e.type.includes('Instability')).length;
+
+            let dos = ["المشي المتقطع (Interval Walking)", "تصلب الجذع (The Big 3)", "النوم بوضع محايد"];
+            let avoids = ["الجلوس أو الوقوف لفترات طويلة دون حركة"];
+
+            // Smart Append based on Dominant Pattern
+            if (flexCount >= 1 && flexCount >= extCount) {
+                dos.push("استخدام وضعية الاستلقاء على البطن للراحة", "Hip Hinge لكل انحناء");
+                avoids.push("الجلوس الطويل بظهر منحني", "لمس أصابع القدم", "تمارين البطن (Sit-ups)");
+            } 
+            
+            if (extCount >= 1) {
+                dos.push("ثني الظهر قليلاً عند الوقوف", "وضع وسادة تحت البطن عند النوم");
+                avoids.push("تمارين الكوبرا (Yoga)", "النوم على البطن", "السباحة (FreeStyle)");
+            }
+
+            if (nerveCount > 0) {
+                dos.push("تحريك العصب (Nerve Flossing) لاحقاً");
+                avoids.push("تمارين الإطالة للساقين (Stretching) تماماً");
+            }
+
+            if (loadCount > 0) {
+                dos.push("الراحة بالاستلقاء");
+                avoids.push("حمل الأوزان", "الجري والقفز");
+            }
+
+             if (instabilityCount > 0) {
+                dos.push("تثبيت الجذع قبل أي حركة");
+                avoids.push("تمارين الليونة والمرونة (Yoga)", "طقطقة الظهر");
+            }
+
+            return { dos: [...new Set(dos)], avoids: [...new Set(avoids)] };
+        }
     },
     methods: {
         startApp() { this.currentPhase = 'history'; },
+        printSection() { window.print(); },
+        toggleBig3() { this.showBig3 = !this.showBig3; },
+        toggleGuide() { this.showGuide = !this.showGuide; }, // Toggle Guide
+        async shareReport() {
+            const text = `تشخيص BodyArchitect:\n✅ افعل: ${this.finalDiagnosis.dos.join(', ')}\n❌ تجنب: ${this.finalDiagnosis.avoids.join(', ')}`;
+            if (navigator.share) {
+                await navigator.share({ title: 'تقرير BodyArchitect', text: text });
+            } else {
+                navigator.clipboard.writeText(text);
+                alert('تم نسخ الملخص للحافظة! (Clipboard)');
+            }
+        },
         handleHistoryAnswer(option) {
-            if (option.flag) { this.safetyPassed = false; return; }
+            if (option.trigger) {
+                this.evidenceLog.push({ source: 'تاريخ', type: option.trigger, note: option.note });
+            }
+            this.historyLog.push({ q: this.currentHistoryQ.text, a: option.label, note: option.note });
             this.lastAnswerNote = option.note;
         },
         nextHistoryQuestion() {
             this.lastAnswerNote = null;
-            if (this.historyIndex < this.historyQuestions.length - 1) this.historyIndex++;
-            else this.currentPhase = 'physical';
+            if (this.historyIndex < this.historyQuestions.length - 1) {
+                this.historyIndex++;
+            } else {
+                this.currentPhase = 'physical';
+            }
         },
         handlePhysicalAnswer(option) {
-            this.currentTestResult = option;
-            this.physicalLog.push({ title: this.currentPhysicalTest.title, passed: option.passed });
-            // "isPain" is essentially "Failed Test" in this context
-            this.physicalLog[this.physicalLog.length - 1].isPain = !option.passed; 
+            // Fix: Handle cases where dos/avoids might be undefined in the option object
+            const dos = option.dos ? option.dos : [];
+            const avoids = option.avoids ? option.avoids : [];
+
+            this.currentTestResult = { 
+                diagnosis: option.diagnosis, 
+                feedback: option.feedback,
+                dos: dos,
+                avoids: avoids
+            };
             
-            if (!option.passed) this.failedTests.push({ name: this.currentPhysicalTest.title, reason: option.feedback });
+            this.physicalLog.push({ 
+                t: this.currentPhysicalTest.title, 
+                r: option.label, 
+                isPain: option.diagnosis !== null,
+                note: option.feedback
+            });
+
+            if (option.diagnosis) {
+                this.evidenceLog.push({ source: `Test ${this.physicalIndex + 1}`, type: option.diagnosis, note: option.detail });
+            }
+            
+            // Safer push
+            if (dos.length > 0) this.globalDos.push(...dos);
+            if (avoids.length > 0) this.globalAvoids.push(...avoids);
         },
         nextPhysicalTest() {
             this.currentTestResult = null;
@@ -672,20 +832,9 @@ createApp({
                 this.physicalIndex++;
             } else {
                 this.currentPhase = 'final';
-                confetti({ particleCount: 150, spread: 70, origin: { y: 0.6 }, colors: ['#06b6d4', '#0ea5e9'] });
+                confetti({ particleCount: 150, spread: 70, origin: { y: 0.6 } });
             }
-        },
-        toggleProgram() { 
-            // Default to recommended if no specific one clicked
-            if(!this.displayedLevel) this.displayedLevel = this.recommendedLevel;
-            this.showProgram = !this.showProgram; 
-        },
-        openSpecificLevel(id) {
-            this.displayedLevel = this.levels[id];
-            this.showProgram = true;
-        },
-        toggleGuide() { this.showGuide = !this.showGuide; }, // Toggle Guide
-        resetApp() { location.reload(); }
+        }
     }
 }).mount('#app');
 </script>
