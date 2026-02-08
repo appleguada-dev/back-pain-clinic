@@ -449,16 +449,16 @@
             </div>
             
             <div class="flex-1 bg-slate-50 relative">
-                <iframe :src="'https://docs.google.com/viewer?url=' + pdfUrl + '&embedded=true'" class="w-full h-full" frameborder="0">
+                <iframe :src="'https://docs.google.com/viewer?url=https://drive.google.com/file/d/1lLlmpMWEpmlzaxhrhYQVfu_vXWmaxrlb/preview&embedded=true'" class="w-full h-full" frameborder="0">
                     <div class="flex flex-col items-center justify-center h-full p-10 text-center">
                         <p class="text-slate-500 mb-4">متصفحك لا يدعم عرض PDF مباشرة.</p>
-                        <a href="guide.pdf" class="bg-blue-600 text-white px-6 py-3 rounded-xl font-bold">تحميل الدليل</a>
+                        <a href="https://drive.google.com/file/d/1lLlmpMWEpmlzaxhrhYQVfu_vXWmaxrlb/view?usp=sharing" target="_blank" class="bg-blue-600 text-white px-6 py-3 rounded-xl font-bold">تحميل الدليل</a>
                     </div>
                 </iframe>
             </div>
 
             <div class="bg-white p-4 border-t border-slate-200 text-center md:text-right">
-                <a href="guide.pdf" target="_blank" class="inline-flex items-center gap-2 text-blue-600 font-bold hover:underline">
+                <a href="https://drive.google.com/file/d/1lLlmpMWEpmlzaxhrhYQVfu_vXWmaxrlb/view?usp=sharing" target="_blank" class="inline-flex items-center gap-2 text-blue-600 font-bold hover:underline">
                     <span>📥</span> تحميل ملف PDF
                 </a>
             </div>
@@ -486,9 +486,6 @@ createApp({
             showBig3: false,
             showGuide: false, // New State for Guide Modal
             
-            // Computed PDF URL logic
-            repoUrl: '', 
-
             // Accumulated lists
             globalDos: [],
             globalAvoids: [],
@@ -736,16 +733,6 @@ createApp({
             else current = totalSteps;
             return (current / totalSteps) * 100;
         },
-        // Auto-calculate full PDF path for Google Viewer
-        pdfUrl() {
-            // Get current base URL (e.g., https://user.github.io/repo/mcgill/)
-            let baseUrl = window.location.href;
-            // Remove index.html if present
-            baseUrl = baseUrl.replace('/index.html', '').replace('/index', '');
-            // Ensure trailing slash
-            if (!baseUrl.endsWith('/')) baseUrl += '/';
-            return baseUrl + 'guide.pdf';
-        },
         finalDiagnosis() {
             // Priority Essentials logic (deduplicated)
             let flexCount = this.evidenceLog.filter(e => e.type.includes('Flexion') || e.type.includes('Disc')).length;
@@ -836,4 +823,5 @@ createApp({
 </script>
 
 </body>
+
 </html>
