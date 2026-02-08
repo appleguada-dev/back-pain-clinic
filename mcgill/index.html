@@ -399,6 +399,14 @@
         </div>
     </main>
 
+    <button @click="toggleGuide" class="guide-btn fixed bottom-8 left-8 z-50 bg-blue-600 text-white px-6 py-4 rounded-full shadow-2xl hover:bg-blue-700 transition-all hover:scale-105 flex items-center gap-3 float-anim">
+        <span class="text-4xl">📘</span>
+        <div class="text-right">
+            <div class="text-xs font-light opacity-90">مساعدة</div>
+            <div class="font-bold text-lg">دليل الاستخدام</div>
+        </div>
+    </button>
+
     <div v-if="showBig3" class="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4" @click.self="toggleBig3">
         <div class="bg-white w-full max-w-4xl rounded-[40px] p-10 shadow-2xl relative animate-fade-in-up overflow-hidden">
             <button @click="toggleBig3" class="absolute top-6 right-6 bg-slate-100 rounded-full p-3 text-slate-500 hover:bg-slate-200 transition-colors">✕</button>
@@ -431,25 +439,17 @@
         </div>
     </div>
 
-    <button @click="toggleGuide" class="guide-btn fixed bottom-8 left-8 z-50 bg-blue-600 text-white px-6 py-4 rounded-full shadow-2xl hover:bg-blue-700 transition-all hover:scale-105 flex items-center gap-3 float-anim">
-        <span class="text-4xl">📘</span>
-        <div class="text-right">
-            <div class="text-xs font-light opacity-90">مساعدة</div>
-            <div class="font-bold text-lg">دليل الاستخدام</div>
-        </div>
-    </button>
-
     <div v-if="showGuide" class="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4" @click.self="toggleGuide">
         <div class="bg-white w-full max-w-6xl h-[85vh] rounded-[30px] p-0 shadow-2xl relative animate-fade-in-up border-4 border-blue-50 overflow-hidden flex flex-col">
             <div class="bg-slate-100 p-4 flex justify-between items-center border-b border-slate-200">
                 <h2 class="text-xl font-bold text-slate-700 flex items-center gap-2">
-                    <span>📘</span> دليل المهندس
+                    <span>📘</span> دليل المهندس (The Manual)
                 </h2>
                 <button @click="toggleGuide" class="bg-white rounded-full p-2 text-slate-500 hover:bg-red-50 hover:text-red-500 transition-colors shadow-sm w-10 h-10 flex items-center justify-center font-bold">✕</button>
             </div>
             
             <div class="flex-1 bg-slate-50 relative">
-                <iframe :src="'https://docs.google.com/viewer?url=https://drive.google.com/file/d/1lLlmpMWEpmlzaxhrhYQVfu_vXWmaxrlb/preview&embedded=true'" class="w-full h-full" frameborder="0">
+                <iframe src="https://drive.google.com/file/d/1lLlmpMWEpmlzaxhrhYQVfu_vXWmaxrlb/preview" class="w-full h-full" frameborder="0">
                     <div class="flex flex-col items-center justify-center h-full p-10 text-center">
                         <p class="text-slate-500 mb-4">متصفحك لا يدعم عرض PDF مباشرة.</p>
                         <a href="https://drive.google.com/file/d/1lLlmpMWEpmlzaxhrhYQVfu_vXWmaxrlb/view?usp=sharing" target="_blank" class="bg-blue-600 text-white px-6 py-3 rounded-xl font-bold">تحميل الدليل</a>
@@ -490,9 +490,6 @@ createApp({
             globalDos: [],
             globalAvoids: [],
 
-            // ... (Rest of your data: historyQuestions, physicalTests) ...
-            // I'm pasting the FULL data block below so you don't lose anything
-            
             // === 1. HISTORY QUESTIONS (Extensive) ===
             historyQuestions: [
                 { 
@@ -577,7 +574,7 @@ createApp({
                 }
             ],
 
-            // === 2. PHYSICAL TESTS (Extensive) ===
+            // === 2. PHYSICAL TESTS (Extensive - Using .png) ===
             physicalTests: [
                 { 
                     id: 't1', title: '1. اختبار ضغط الكرسي (Compression)', image: 'img/test1.png', 
@@ -734,7 +731,7 @@ createApp({
             return (current / totalSteps) * 100;
         },
         finalDiagnosis() {
-            // Priority Essentials logic (deduplicated)
+            // Priority Essentials based on Patterns (Deduplicated logic)
             let flexCount = this.evidenceLog.filter(e => e.type.includes('Flexion') || e.type.includes('Disc')).length;
             let extCount = this.evidenceLog.filter(e => e.type.includes('Extension') || e.type.includes('Facet')).length;
             let nerveCount = this.evidenceLog.filter(e => e.type.includes('Nerve') || e.type.includes('Tension')).length;
@@ -744,12 +741,30 @@ createApp({
             let dos = ["المشي المتقطع (Interval Walking)", "تصلب الجذع (The Big 3)", "النوم بوضع محايد"];
             let avoids = ["الجلوس أو الوقوف لفترات طويلة دون حركة"];
 
-            if (this.globalDos.length > 0) dos = [...new Set([...dos, ...this.globalDos])];
-            if (this.globalAvoids.length > 0) avoids = [...new Set([...avoids, ...this.globalAvoids])];
+            // Smart Append based on Dominant Pattern
+            if (flexCount >= 1 && flexCount >= extCount) {
+                dos.push("استخدام وضعية الاستلقاء على البطن للراحة", "Hip Hinge لكل انحناء");
+                avoids.push("الجلوس الطويل بظهر منحني", "لمس أصابع القدم", "تمارين البطن (Sit-ups)");
+            } 
+            
+            if (extCount >= 1) {
+                dos.push("ثني الظهر قليلاً عند الوقوف", "وضع وسادة تحت البطن عند النوم");
+                avoids.push("تمارين الكوبرا (Yoga)", "النوم على البطن", "السباحة (FreeStyle)");
+            }
 
-            // Ensure logic overrides duplicates
-            if (flexCount > extCount) {
-                avoids = avoids.filter(a => !a.includes("التمدد")); 
+            if (nerveCount > 0) {
+                dos.push("تحريك العصب (Nerve Flossing) لاحقاً");
+                avoids.push("تمارين الإطالة للساقين (Stretching) تماماً");
+            }
+
+            if (loadCount > 0) {
+                dos.push("الراحة بالاستلقاء");
+                avoids.push("حمل الأوزان", "الجري والقفز");
+            }
+
+             if (instabilityCount > 0) {
+                dos.push("تثبيت الجذع قبل أي حركة");
+                avoids.push("تمارين الليونة والمرونة (Yoga)", "طقطقة الظهر");
             }
 
             return { dos: [...new Set(dos)], avoids: [...new Set(avoids)] };
@@ -759,7 +774,7 @@ createApp({
         startApp() { this.currentPhase = 'history'; },
         printSection() { window.print(); },
         toggleBig3() { this.showBig3 = !this.showBig3; },
-        toggleGuide() { this.showGuide = !this.showGuide; }, 
+        toggleGuide() { this.showGuide = !this.showGuide; }, // Toggle Guide
         async shareReport() {
             const text = `تشخيص BodyArchitect:\n✅ افعل: ${this.finalDiagnosis.dos.join(', ')}\n❌ تجنب: ${this.finalDiagnosis.avoids.join(', ')}`;
             if (navigator.share) {
@@ -785,6 +800,7 @@ createApp({
             }
         },
         handlePhysicalAnswer(option) {
+            // Fix: Handle cases where dos/avoids might be undefined in the option object
             const dos = option.dos ? option.dos : [];
             const avoids = option.avoids ? option.avoids : [];
 
@@ -806,6 +822,7 @@ createApp({
                 this.evidenceLog.push({ source: `Test ${this.physicalIndex + 1}`, type: option.diagnosis, note: option.detail });
             }
             
+            // Safer push
             if (dos.length > 0) this.globalDos.push(...dos);
             if (avoids.length > 0) this.globalAvoids.push(...avoids);
         },
@@ -823,5 +840,4 @@ createApp({
 </script>
 
 </body>
-
 </html>
