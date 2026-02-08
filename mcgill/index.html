@@ -19,7 +19,15 @@
         ::-webkit-scrollbar-track { background: #f1f1f1; }
         ::-webkit-scrollbar-thumb { background: #059669; border-radius: 4px; }
 
-        /* --- FINAL PDF PRINT FIX --- */
+        /* Animation for the Guide Button */
+        @keyframes float {
+            0% { transform: translateY(0px); box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1); }
+            50% { transform: translateY(-5px); box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.2); }
+            100% { transform: translateY(0px); box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1); }
+        }
+        .float-anim { animation: float 3s ease-in-out infinite; }
+
+        /* Print Styles */
         @media print {
             body, html, #app, main, .flex-1 {
                 height: auto !important;
@@ -28,7 +36,7 @@
                 position: static !important;
                 display: block !important;
             }
-            aside, header, .no-print, button, .buttons-container { display: none !important; }
+            aside, header, .no-print, button, .buttons-container, .guide-btn { display: none !important; }
             .printable-area, .printable-area * { visibility: visible !important; }
             .printable-area {
                 position: relative !important;
@@ -75,7 +83,7 @@
                 </h3>
                 
                 <div v-if="evidenceLog.length === 0" class="text-sm text-slate-500 italic text-center py-6 border border-dashed border-slate-700 rounded-lg">
-                    بانتظار المدخلات...
+                    يتم تجميع الأدلة...
                 </div>
                 
                 <transition-group name="fade" tag="div" class="space-y-2">
@@ -84,7 +92,6 @@
                             <span class="font-bold text-emerald-300 text-xs">{{ log.source }}</span>
                         </div>
                         <div class="font-bold text-white mb-1">{{ log.type }}</div>
-                        <div class="text-xs text-slate-400 leading-snug">{{ log.note ? log.note.substring(0, 50) + '...' : '' }}</div>
                     </div>
                 </transition-group>
             </div>
@@ -391,6 +398,14 @@
         </div>
     </main>
 
+    <button @click="toggleGuide" class="guide-btn fixed bottom-8 left-8 z-50 bg-blue-600 text-white px-6 py-4 rounded-full shadow-2xl hover:bg-blue-700 transition-all hover:scale-105 flex items-center gap-3 float-anim">
+        <span class="text-4xl">📘</span>
+        <div class="text-right">
+            <div class="text-xs font-light opacity-90">مساعدة</div>
+            <div class="font-bold text-lg">دليل الاستخدام</div>
+        </div>
+    </button>
+
     <div v-if="showBig3" class="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4" @click.self="toggleBig3">
         <div class="bg-white w-full max-w-4xl rounded-[40px] p-10 shadow-2xl relative animate-fade-in-up overflow-hidden">
             <button @click="toggleBig3" class="absolute top-6 right-6 bg-slate-100 rounded-full p-3 text-slate-500 hover:bg-slate-200 transition-colors">✕</button>
@@ -423,6 +438,23 @@
         </div>
     </div>
 
+    <div v-if="showGuide" class="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4" @click.self="toggleGuide">
+        <div class="bg-white w-full max-w-lg rounded-[30px] p-8 shadow-2xl relative animate-fade-in-up border-4 border-blue-50">
+            <button @click="toggleGuide" class="absolute top-4 right-4 bg-slate-100 rounded-full p-2 text-slate-500 hover:bg-slate-200 transition-colors">✕</button>
+            <div class="text-center">
+                <div class="w-20 h-20 bg-blue-100 rounded-full flex items-center justify-center text-4xl mx-auto mb-6 shadow-sm">📘</div>
+                <h2 class="text-2xl font-black text-slate-800 mb-2">دليل المهندس (The Manual)</h2>
+                <p class="text-slate-500 mb-8 leading-relaxed">
+                    يحتوي هذا الملف على التفاصيل الكاملة لمنهجية ماكجيل، صور توضيحية إضافية، وجداول للمتابعة اليومية.
+                </p>
+                <a href="guide.pdf" target="_blank" class="block w-full bg-blue-600 text-white py-4 rounded-xl font-bold hover:bg-blue-700 shadow-lg transition-transform hover:-translate-y-1 no-underline flex items-center justify-center gap-2">
+                    <span>📥</span> تحميل الدليل (PDF)
+                </a>
+                <p class="text-xs text-slate-400 mt-4">تأكد من وجود ملف guide.pdf في نفس المجلد.</p>
+            </div>
+        </div>
+    </div>
+
 </div>
 
 <script>
@@ -442,6 +474,7 @@ createApp({
             lastAnswerNote: null,
             currentTestResult: null,
             showBig3: false,
+            showGuide: false, // New State for Guide Modal
             
             // Accumulated lists
             globalDos: [],
@@ -531,7 +564,7 @@ createApp({
                 }
             ],
 
-            // === 2. PHYSICAL TESTS (Extensive - Updated to PNG) ===
+            // === 2. PHYSICAL TESTS (Extensive - Using .png) ===
             physicalTests: [
                 { 
                     id: 't1', title: '1. اختبار ضغط الكرسي (Compression)', image: 'img/test1.png', 
@@ -731,6 +764,7 @@ createApp({
         startApp() { this.currentPhase = 'history'; },
         printSection() { window.print(); },
         toggleBig3() { this.showBig3 = !this.showBig3; },
+        toggleGuide() { this.showGuide = !this.showGuide; }, // Toggle Guide
         async shareReport() {
             const text = `تشخيص BodyArchitect:\n✅ افعل: ${this.finalDiagnosis.dos.join(', ')}\n❌ تجنب: ${this.finalDiagnosis.avoids.join(', ')}`;
             if (navigator.share) {
