@@ -2,7 +2,7 @@
 <html lang="ar" dir="rtl">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>BackRx | بروتوكول ماركوس العلاجي</title>
     <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
     <script src="https://cdn.tailwindcss.com"></script>
@@ -15,7 +15,7 @@
         .fade-enter-from, .fade-leave-to { opacity: 0; }
         
         /* Custom Scrollbar (Cyan Theme) */
-        ::-webkit-scrollbar { width: 6px; }
+        ::-webkit-scrollbar { width: 4px; }
         ::-webkit-scrollbar-track { background: #f1f1f1; }
         ::-webkit-scrollbar-thumb { background: #0891b2; border-radius: 4px; }
 
@@ -38,7 +38,7 @@
                 position: static !important;
                 display: block !important;
             }
-            aside, header, .no-print, button, .buttons-container, .guide-btn { display: none !important; }
+            aside, header, .no-print, button, .buttons-container, .guide-btn, .mobile-log-toggle { display: none !important; }
             .printable-area, .printable-area * { visibility: visible !important; }
             .printable-area {
                 position: relative !important;
@@ -54,20 +54,27 @@
         }
     </style>
 </head>
-<body class="bg-slate-50 text-slate-800 h-screen overflow-hidden selection:bg-cyan-200">
+<body class="bg-slate-50 text-slate-800 h-[100dvh] overflow-hidden selection:bg-cyan-200">
 
 <div id="app" class="h-full flex flex-col md:flex-row">
 
-    <aside class="w-full md:w-80 bg-gradient-to-b from-slate-900 to-slate-800 text-white flex flex-col shadow-2xl z-20 shrink-0 h-full no-print">
-        <div class="p-6 bg-cyan-700 shadow-lg relative overflow-hidden">
+    <aside class="w-full md:w-80 bg-gradient-to-b from-slate-900 to-slate-800 text-white flex flex-col shadow-2xl z-30 shrink-0 transition-all duration-300" :class="mobileLogOpen ? 'h-1/2' : 'h-auto md:h-full'">
+        <div class="p-4 md:p-6 bg-cyan-700 shadow-lg relative overflow-hidden flex justify-between items-center md:block">
             <div class="absolute -top-10 -left-10 w-32 h-32 bg-white/10 rounded-full blur-2xl"></div>
-            <h1 class="text-2xl font-black flex items-center gap-3 relative z-10">
-                <span class="text-3xl">🧬</span> BackRx
-            </h1>
-            <p class="text-cyan-100 text-xs mt-1 font-bold tracking-wider relative z-10 opacity-90">بروتوكول ماركوس (Kraus-Weber)</p>
+            <div>
+                <h1 class="text-xl md:text-2xl font-black flex items-center gap-2 relative z-10">
+                    <span class="text-2xl md:text-3xl">🧬</span> BackRx
+                </h1>
+                <p class="text-cyan-100 text-[10px] md:text-xs mt-1 font-bold tracking-wider relative z-10 opacity-90">بروتوكول ماركوس</p>
+            </div>
+
+            <button @click="mobileLogOpen = !mobileLogOpen" class="md:hidden text-xs bg-black/20 px-3 py-1.5 rounded-full flex items-center gap-2 mobile-log-toggle">
+                <span>{{ mobileLogOpen ? 'إخفاء السجل' : 'عرض السجل' }}</span>
+                <span class="bg-red-500 text-white text-[10px] px-1.5 rounded-full">{{ failedTests.length }}</span>
+            </button>
         </div>
 
-        <div class="flex-1 overflow-y-auto p-4 space-y-6">
+        <div class="flex-1 overflow-y-auto p-4 space-y-6" :class="mobileLogOpen ? 'block' : 'hidden md:block'">
             <div>
                 <div class="flex justify-between text-xs text-slate-400 mb-2 font-bold">
                     <span>مرحلة الفحص</span>
@@ -100,70 +107,70 @@
         </div>
     </aside>
 
-    <main class="flex-1 flex flex-col h-full relative overflow-hidden bg-slate-50">
+    <main class="flex-1 flex flex-col h-full relative overflow-hidden bg-slate-50 w-full">
         
-        <header class="bg-white px-6 py-4 shadow-sm border-b flex justify-between items-center z-10 no-print">
+        <header class="bg-white px-4 md:px-6 py-3 md:py-4 shadow-sm border-b flex justify-between items-center z-10 no-print shrink-0">
             <div>
-                <h2 v-if="currentPhase === 'history'" class="text-xl font-bold text-slate-800 flex items-center gap-2">
-                    <span class="bg-blue-100 text-blue-700 p-1.5 rounded-lg text-sm">1</span>
+                <h2 v-if="currentPhase === 'history'" class="text-base md:text-xl font-bold text-slate-800 flex items-center gap-2">
+                    <span class="bg-blue-100 text-blue-700 p-1 md:p-1.5 rounded-lg text-xs md:text-sm">1</span>
                     الفحص الأمني (Safety)
                 </h2>
-                <h2 v-else-if="currentPhase === 'physical'" class="text-xl font-bold text-slate-800 flex items-center gap-2">
-                    <span class="bg-cyan-100 text-cyan-700 p-1.5 rounded-lg text-sm">2</span>
+                <h2 v-else-if="currentPhase === 'physical'" class="text-base md:text-xl font-bold text-slate-800 flex items-center gap-2">
+                    <span class="bg-cyan-100 text-cyan-700 p-1 md:p-1.5 rounded-lg text-xs md:text-sm">2</span>
                     اختبارات كراوس-ويبر ({{ physicalIndex + 1 }}/6)
                 </h2>
-                <h2 v-else-if="currentPhase === 'final'" class="text-xl font-bold text-slate-800 flex items-center gap-2">
-                    <span class="bg-purple-100 text-purple-700 p-1.5 rounded-lg text-sm">3</span>
+                <h2 v-else-if="currentPhase === 'final'" class="text-base md:text-xl font-bold text-slate-800 flex items-center gap-2">
+                    <span class="bg-purple-100 text-purple-700 p-1 md:p-1.5 rounded-lg text-xs md:text-sm">3</span>
                     الخطة العلاجية
                 </h2>
-                <h2 v-else class="text-xl font-bold text-slate-800">مرحباً بك</h2>
+                <h2 v-else class="text-base md:text-xl font-bold text-slate-800">مرحباً بك</h2>
             </div>
-            <div class="text-xs font-bold text-slate-400 bg-slate-100 px-3 py-1 rounded-full">Kraus-Weber Protocol ™</div>
+            <div class="text-[10px] md:text-xs font-bold text-slate-400 bg-slate-100 px-2 md:px-3 py-1 rounded-full">Kraus-Weber Protocol ™</div>
         </header>
 
-        <div class="flex-1 overflow-y-auto p-4 md:p-8 relative" id="main-scroll">
+        <div class="flex-1 overflow-y-auto p-4 md:p-8 relative w-full" id="main-scroll">
             
-            <div v-if="currentPhase === 'intro'" class="max-w-2xl mx-auto mt-10 animate-fade-in-up">
-                <div class="bg-white p-10 rounded-3xl shadow-2xl text-center border border-slate-100 relative overflow-hidden">
+            <div v-if="currentPhase === 'intro'" class="max-w-2xl mx-auto mt-4 md:mt-10 animate-fade-in-up">
+                <div class="bg-white p-6 md:p-10 rounded-3xl shadow-2xl text-center border border-slate-100 relative overflow-hidden">
                     <div class="absolute top-0 left-0 w-full h-2 bg-gradient-to-r from-cyan-400 to-blue-500"></div>
-                    <div class="w-24 h-24 bg-cyan-50 rounded-full flex items-center justify-center text-5xl mx-auto mb-6 shadow-sm">🧬</div>
-                    <h2 class="text-4xl font-black text-slate-800 mb-4 tracking-tight">نظام BackRx للعمود الفقري</h2>
-                    <p class="text-slate-600 mb-6 leading-relaxed text-lg">
+                    <div class="w-20 h-20 md:w-24 md:h-24 bg-cyan-50 rounded-full flex items-center justify-center text-4xl md:text-5xl mx-auto mb-4 md:mb-6 shadow-sm">🧬</div>
+                    <h2 class="text-2xl md:text-4xl font-black text-slate-800 mb-4 tracking-tight">نظام BackRx للعمود الفقري</h2>
+                    <p class="text-slate-600 mb-6 leading-relaxed text-sm md:text-lg">
                         تعتمد هذه المنهجية على أبحاث الدكاترة "هانز كراوس" و"نورمان ماركوس".
                         <br><strong>الفلسفة:</strong> ألم الظهر غالباً ما يكون مشكلة في "العضلات" (Software) وليس "العظام" (Hardware).
                     </p>
                     
-                    <div class="bg-amber-50 border border-amber-200 rounded-xl p-5 mb-8 text-right shadow-sm">
-                        <h4 class="text-amber-800 font-bold mb-2 flex items-center gap-2"><span>⚠️</span> تنويه طبي هام</h4>
-                        <p class="text-amber-700 text-sm leading-relaxed mb-4 font-medium">
-                            هذا التطبيق يساعدك على اكتشاف العضلات الضعيفة أو المتشنجة. لا يحل محل الطبيب. إذا شعرت بألم حاد (Acute Pain) أثناء أي اختبار، توقف فوراً.
+                    <div class="bg-amber-50 border border-amber-200 rounded-xl p-4 md:p-5 mb-8 text-right shadow-sm">
+                        <h4 class="text-amber-800 font-bold mb-2 flex items-center gap-2 text-sm md:text-base"><span>⚠️</span> تنويه طبي هام</h4>
+                        <p class="text-amber-700 text-xs md:text-sm leading-relaxed mb-4 font-medium">
+                            هذا التطبيق أداة تعليمية لرفع الوعي الجسدي. النتائج ليست تشخيصاً طبياً نهائياً. إذا شعرت بألم حاد (Acute Pain) أثناء أي اختبار، توقف فوراً.
                         </p>
                         <label class="flex items-center gap-3 cursor-pointer group bg-white p-3 rounded-lg border border-amber-100 hover:border-amber-300 transition-colors">
-                            <input type="checkbox" v-model="disclaimerAccepted" class="w-5 h-5 accent-cyan-600 rounded border-gray-300">
-                            <span class="text-sm font-bold text-slate-700">فهمت ذلك، وأوافق على المتابعة.</span>
+                            <input type="checkbox" v-model="disclaimerAccepted" class="w-5 h-5 accent-cyan-600 rounded border-gray-300 shrink-0">
+                            <span class="text-xs md:text-sm font-bold text-slate-700">فهمت ذلك، وأوافق على المتابعة.</span>
                         </label>
                     </div>
 
-                    <div class="grid grid-cols-2 gap-4 text-right bg-slate-50 p-6 rounded-2xl border border-slate-200 mb-8">
+                    <div class="grid grid-cols-2 gap-4 text-right bg-slate-50 p-4 md:p-6 rounded-2xl border border-slate-200 mb-8">
                         <div>
                             <label class="block text-xs font-bold text-slate-500 mb-1">الاسم</label>
-                            <input v-model="user.name" class="w-full bg-white border border-slate-300 rounded-lg p-3 outline-none focus:border-cyan-500 transition-colors">
+                            <input v-model="user.name" class="w-full bg-white border border-slate-300 rounded-lg p-2 md:p-3 outline-none focus:border-cyan-500 transition-colors">
                         </div>
                         <div>
                             <label class="block text-xs font-bold text-slate-500 mb-1">العمر</label>
-                            <input v-model.number="user.age" type="number" class="w-full bg-white border border-slate-300 rounded-lg p-3 outline-none focus:border-cyan-500 transition-colors">
+                            <input v-model.number="user.age" type="number" class="w-full bg-white border border-slate-300 rounded-lg p-2 md:p-3 outline-none focus:border-cyan-500 transition-colors">
                         </div>
                     </div>
-                    <button @click="startApp" :disabled="!user.name || !disclaimerAccepted" class="w-full bg-cyan-600 text-white py-4 rounded-xl font-bold text-lg shadow-lg hover:bg-cyan-700 transition-all transform hover:-translate-y-1 disabled:opacity-50 disabled:cursor-not-allowed">
+                    <button @click="startApp" :disabled="!user.name || !disclaimerAccepted" class="w-full bg-cyan-600 text-white py-4 rounded-xl font-bold text-base md:text-lg shadow-lg hover:bg-cyan-700 transition-all transform hover:-translate-y-1 disabled:opacity-50 disabled:cursor-not-allowed">
                         ابدأ التقييم الآن
                     </button>
                 </div>
             </div>
 
             <div v-if="currentPhase === 'history'" class="max-w-3xl mx-auto">
-                <div v-if="historyIndex === -1" class="bg-white rounded-2xl shadow-xl p-8 mb-6 animate-fade-in-up border-l-8 border-cyan-500">
-                    <h3 class="text-2xl font-bold text-slate-800 mb-4">المرحلة الأولى: الأمان والفحص الأولي</h3>
-                    <div class="text-slate-600 leading-relaxed space-y-4 mb-8 text-base font-medium">
+                <div v-if="historyIndex === -1" class="bg-white rounded-2xl shadow-xl p-6 md:p-8 mb-6 animate-fade-in-up border-l-8 border-cyan-500">
+                    <h3 class="text-xl md:text-2xl font-bold text-slate-800 mb-4">المرحلة الأولى: الأمان والفحص الأولي</h3>
+                    <div class="text-slate-600 leading-relaxed space-y-4 mb-8 text-sm md:text-base font-medium">
                         <p>
                             قبل أن نبدأ في الاختبارات الجسدية (Kraus-Weber Tests)، يجب أن نتأكد من أنك لست في حالة إصابة حادة تمنعك من الحركة.
                         </p>
@@ -185,14 +192,14 @@
                     </div>
 
                     <div v-else>
-                        <div v-if="!lastAnswerNote" class="bg-white rounded-2xl shadow-lg p-8 mb-6 animate-fade-in-up">
+                        <div v-if="!lastAnswerNote" class="bg-white rounded-2xl shadow-lg p-6 md:p-8 mb-6 animate-fade-in-up">
                             <div class="mb-6 flex justify-between items-center">
                                 <span class="text-xs font-bold text-cyan-700 bg-cyan-100 px-3 py-1 rounded-full">سؤال الأمان {{ historyIndex + 1 }} / 3</span>
                             </div>
-                            <h3 class="text-2xl font-bold mb-8 text-slate-800 leading-snug">{{ currentHistoryQ.text }}</h3>
+                            <h3 class="text-xl md:text-2xl font-bold mb-8 text-slate-800 leading-snug">{{ currentHistoryQ.text }}</h3>
                             <div class="space-y-4">
-                                <button v-for="opt in currentHistoryQ.options" @click="handleHistoryAnswer(opt)" class="w-full text-right p-5 rounded-xl border-2 border-slate-100 hover:border-cyan-500 hover:bg-cyan-50 transition-all flex justify-between items-center group">
-                                    <span class="font-bold text-slate-700 text-lg">{{ opt.label }}</span>
+                                <button v-for="opt in currentHistoryQ.options" @click="handleHistoryAnswer(opt)" class="w-full text-right p-4 md:p-5 rounded-xl border-2 border-slate-100 hover:border-cyan-500 hover:bg-cyan-50 transition-all flex justify-between items-center group">
+                                    <span class="font-bold text-slate-700 text-base md:text-lg">{{ opt.label }}</span>
                                     <div class="w-6 h-6 rounded-full border-2 border-slate-300 group-hover:border-cyan-500 group-hover:bg-cyan-500 flex items-center justify-center transition-colors">
                                         <span class="text-white text-xs opacity-0 group-hover:opacity-100">✓</span>
                                     </div>
@@ -224,26 +231,26 @@
                             </div>
                         </div>
                     </div>
-                    <div class="bg-white p-8 rounded-2xl shadow-md border-t-4 border-cyan-500 flex-1">
+                    <div class="bg-white p-6 md:p-8 rounded-2xl shadow-md border-t-4 border-cyan-500 flex-1">
                         <h3 class="text-cyan-800 font-bold mb-4 flex items-center gap-2 text-lg"><span>📋</span> تعليمات الأداء:</h3>
-                        <div class="text-slate-600 text-base leading-relaxed space-y-4" v-html="currentPhysicalTest.instruction"></div>
+                        <div class="text-slate-600 text-sm md:text-base leading-relaxed space-y-4" v-html="currentPhysicalTest.instruction"></div>
                     </div>
                 </div>
 
                 <div class="w-full lg:w-1/2 flex flex-col justify-center pb-10">
                     <transition name="fade" mode="out-in">
-                        <div v-if="!currentTestResult" class="bg-white p-10 rounded-3xl shadow-2xl border border-slate-100">
-                            <h3 class="text-2xl font-black text-slate-800 mb-8 leading-snug">{{ currentPhysicalTest.question }}</h3>
+                        <div v-if="!currentTestResult" class="bg-white p-6 md:p-10 rounded-3xl shadow-2xl border border-slate-100">
+                            <h3 class="text-xl md:text-2xl font-black text-slate-800 mb-8 leading-snug">{{ currentPhysicalTest.question }}</h3>
                             <div class="space-y-4">
-                                <button v-for="opt in currentPhysicalTest.options" @click="handlePhysicalAnswer(opt)" class="w-full text-right p-6 rounded-2xl border-2 border-slate-100 hover:border-cyan-500 hover:bg-cyan-50 hover:shadow-lg transition-all flex justify-between items-center group">
-                                    <span class="font-bold text-slate-700 text-lg group-hover:text-cyan-800">{{ opt.label }}</span>
+                                <button v-for="opt in currentPhysicalTest.options" @click="handlePhysicalAnswer(opt)" class="w-full text-right p-4 md:p-6 rounded-2xl border-2 border-slate-100 hover:border-cyan-500 hover:bg-cyan-50 hover:shadow-lg transition-all flex justify-between items-center group">
+                                    <span class="font-bold text-slate-700 text-base md:text-lg group-hover:text-cyan-800">{{ opt.label }}</span>
                                     <span class="text-2xl text-slate-300 group-hover:text-cyan-500 transition-colors">➜</span>
                                 </button>
                             </div>
                         </div>
 
                         <div v-else class="bg-white rounded-3xl shadow-2xl border-2 border-cyan-100 overflow-hidden">
-                            <div class="bg-cyan-50 p-8 border-b border-cyan-100">
+                            <div class="bg-cyan-50 p-6 md:p-8 border-b border-cyan-100">
                                 <div class="flex items-center gap-3 mb-3">
                                     <span class="text-3xl">🔍</span>
                                     <h3 class="text-2xl font-bold text-cyan-900">التحليل الطبي العميق:</h3>
@@ -259,16 +266,16 @@
                             </div>
 
                             <div class="grid grid-cols-2 divide-x divide-x-reverse divide-slate-100">
-                                <div class="p-6 bg-green-50/50">
-                                    <h4 class="text-green-700 font-black mb-4 flex items-center gap-2 text-lg"><span>✅</span> افعل</h4>
-                                    <ul v-if="currentTestResult.dos.length > 0" class="text-sm text-slate-700 space-y-3 font-medium">
+                                <div class="p-4 md:p-6 bg-green-50/50">
+                                    <h4 class="text-green-700 font-black mb-4 flex items-center gap-2 text-sm md:text-lg"><span>✅</span> افعل</h4>
+                                    <ul v-if="currentTestResult.dos.length > 0" class="text-xs md:text-sm text-slate-700 space-y-3 font-medium">
                                         <li v-for="tip in currentTestResult.dos" class="flex items-start gap-2"><span class="text-green-500 mt-1">•</span> {{ tip }}</li>
                                     </ul>
                                     <p v-else class="text-xs text-slate-400">حافظ على نشاطك الحالي.</p>
                                 </div>
-                                <div class="p-6 bg-red-50/50">
-                                    <h4 class="text-red-700 font-black mb-4 flex items-center gap-2 text-lg"><span>❌</span> تجنب</h4>
-                                    <ul v-if="currentTestResult.avoids.length > 0" class="text-sm text-slate-700 space-y-3 font-medium">
+                                <div class="p-4 md:p-6 bg-red-50/50">
+                                    <h4 class="text-red-700 font-black mb-4 flex items-center gap-2 text-sm md:text-lg"><span>❌</span> تجنب</h4>
+                                    <ul v-if="currentTestResult.avoids.length > 0" class="text-xs md:text-sm text-slate-700 space-y-3 font-medium">
                                         <li v-for="tip in currentTestResult.avoids" class="flex items-start gap-2"><span class="text-red-500 mt-1">•</span> {{ tip }}</li>
                                     </ul>
                                     <p v-else class="text-xs text-slate-400">لا توجد محاذير خاصة.</p>
@@ -288,27 +295,27 @@
 
             <div v-if="currentPhase === 'final'" class="max-w-5xl mx-auto printable-area bg-slate-50 p-0 animate-fade-in-up mb-20 relative">
                 
-                <div class="bg-slate-900 text-white p-12 rounded-b-[40px] shadow-2xl text-center relative overflow-hidden mb-12">
+                <div class="bg-slate-900 text-white p-8 md:p-12 rounded-b-[30px] md:rounded-b-[40px] shadow-2xl text-center relative overflow-hidden mb-8 md:mb-12">
                     <div class="absolute top-0 left-0 w-full h-full bg-gradient-to-tr from-cyan-600/30 to-blue-600/30"></div>
                     <div class="relative z-10">
-                        <h1 class="text-4xl font-black mb-2 tracking-tight">تقرير بروتوكول ماركوس</h1>
-                        <p class="text-slate-400 text-lg font-light">تحليل نقاط الضعف العضلية (The Weak Link)</p>
+                        <h1 class="text-2xl md:text-4xl font-black mb-2 tracking-tight">تقرير بروتوكول ماركوس</h1>
+                        <p class="text-slate-400 text-base md:text-lg font-light">تحليل نقاط الضعف العضلية (The Weak Link)</p>
                         <div class="mt-6 inline-flex bg-white/10 backdrop-blur rounded-full px-6 py-2 text-sm">
                             <span class="text-cyan-300 font-bold ml-2">المستخدم:</span> {{ user.name }} | {{ new Date().toLocaleDateString('ar-EG') }}
                         </div>
                     </div>
                 </div>
 
-                <div class="px-8 max-w-6xl mx-auto">
+                <div class="px-4 md:px-8 max-w-6xl mx-auto">
                     
                     <div class="text-center mb-10">
-                        <h2 class="text-3xl font-bold text-slate-800 inline-block border-b-4 border-cyan-500 pb-2">التشخيص: {{ diagnosisTitle }}</h2>
-                        <p class="text-slate-500 mt-2 text-lg">{{ diagnosisSubtitle }}</p>
+                        <h2 class="text-2xl md:text-3xl font-bold text-slate-800 inline-block border-b-4 border-cyan-500 pb-2">التشخيص: {{ diagnosisTitle }}</h2>
+                        <p class="text-slate-500 mt-2 text-sm md:text-lg">{{ diagnosisSubtitle }}</p>
                     </div>
 
                     <div class="bg-white rounded-3xl shadow-xl overflow-hidden border-2 border-cyan-100 mb-12">
-                        <div class="bg-cyan-600 p-6 text-white flex justify-between items-center">
-                            <h3 class="text-2xl font-bold">البرنامج المقترح: {{ recommendedLevel.name }}</h3>
+                        <div class="bg-cyan-600 p-6 text-white flex flex-col md:flex-row justify-between items-center gap-4">
+                            <h3 class="text-xl md:text-2xl font-bold">البرنامج المقترح: {{ recommendedLevel.name }}</h3>
                             <span class="bg-white/20 px-4 py-1 rounded-full text-sm">التركيز: {{ recommendedLevel.focus }}</span>
                         </div>
                         <div class="p-8 text-center">
@@ -324,7 +331,7 @@
 
                     <div class="mb-16 print-break">
                         <h3 class="text-xl font-black text-slate-800 mb-6 border-r-8 border-slate-400 pr-4">تصفح كافة المستويات (Browse All Levels)</h3>
-                        <div class="grid md:grid-cols-3 gap-4">
+                        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
                             <button @click="openSpecificLevel(1)" class="p-4 rounded-xl border border-cyan-200 bg-cyan-50 hover:bg-cyan-100 transition-colors text-right">
                                 <div class="font-bold text-cyan-800 text-lg">المستوى 1</div>
                                 <div class="text-xs text-cyan-600">الاسترخاء (Relaxation)</div>
@@ -367,11 +374,11 @@
     </main>
 
     <div v-if="showProgram" class="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4" @click.self="toggleProgram">
-        <div class="bg-white w-full max-w-5xl rounded-[40px] p-8 shadow-2xl relative animate-fade-in-up overflow-hidden max-h-[90vh] flex flex-col">
+        <div class="bg-white w-full max-w-5xl rounded-[30px] md:rounded-[40px] p-6 md:p-8 shadow-2xl relative animate-fade-in-up overflow-hidden max-h-[90vh] flex flex-col">
             <div class="flex justify-between items-center mb-6 pb-4 border-b border-slate-100 shrink-0">
                 <div>
-                    <h2 class="text-3xl font-black text-slate-800">{{ displayedLevel.name }}</h2>
-                    <p class="text-cyan-600 font-bold">التركيز: {{ displayedLevel.focus }}</p>
+                    <h2 class="text-2xl md:text-3xl font-black text-slate-800">{{ displayedLevel.name }}</h2>
+                    <p class="text-cyan-600 font-bold text-sm md:text-base">التركيز: {{ displayedLevel.focus }}</p>
                 </div>
                 <button @click="toggleProgram" class="bg-slate-100 rounded-full p-3 text-slate-500 hover:bg-slate-200 transition-colors">✕</button>
             </div>
@@ -380,7 +387,7 @@
                 
                 <div class="bg-slate-900 rounded-2xl p-6 text-center shadow-lg">
                     <h4 class="text-white font-bold mb-4">📺 فيديو توضيحي للتمارين</h4>
-                    <a :href="displayedLevel.video" target="_blank" class="inline-flex items-center gap-2 bg-red-600 text-white px-8 py-3 rounded-xl font-bold hover:bg-red-700 transition-transform hover:scale-105 no-underline shadow-lg">
+                    <a :href="displayedLevel.video" target="_blank" class="inline-flex items-center gap-2 bg-red-600 text-white px-8 py-3 rounded-xl font-bold hover:bg-red-700 transition-transform hover:scale-105 no-underline shadow-lg text-sm md:text-base">
                         مشاهدة الفيديو على TikTok &rarr;
                     </a>
                 </div>
@@ -402,18 +409,18 @@
         </div>
     </div>
 
-    <button @click="toggleGuide" class="guide-btn fixed bottom-8 left-8 z-50 bg-cyan-600 text-white px-6 py-4 rounded-full shadow-2xl hover:bg-cyan-700 transition-all hover:scale-105 flex items-center gap-3 float-anim">
-        <span class="text-4xl">📘</span>
+    <button @click="toggleGuide" class="guide-btn fixed bottom-8 left-8 z-50 bg-cyan-600 text-white px-5 py-3 md:px-6 md:py-4 rounded-full shadow-2xl hover:bg-cyan-700 transition-all hover:scale-105 flex items-center gap-3 float-anim">
+        <span class="text-3xl md:text-4xl">📘</span>
         <div class="text-right">
-            <div class="text-xs font-light opacity-90">مساعدة</div>
-            <div class="font-bold text-lg">دليل الاستخدام</div>
+            <div class="text-[10px] md:text-xs font-light opacity-90">مساعدة</div>
+            <div class="font-bold text-sm md:text-lg">دليل الاستخدام</div>
         </div>
     </button>
 
     <div v-if="showGuide" class="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4" @click.self="toggleGuide">
-        <div class="bg-white w-full max-w-6xl h-[85vh] rounded-[30px] p-0 shadow-2xl relative animate-fade-in-up border-4 border-cyan-50 overflow-hidden flex flex-col">
+        <div class="bg-white w-full max-w-6xl h-[85vh] rounded-[20px] md:rounded-[30px] p-0 shadow-2xl relative animate-fade-in-up border-4 border-cyan-50 overflow-hidden flex flex-col">
             <div class="bg-slate-100 p-4 flex justify-between items-center border-b border-slate-200">
-                <h2 class="text-xl font-bold text-slate-700 flex items-center gap-2">
+                <h2 class="text-lg md:text-xl font-bold text-slate-700 flex items-center gap-2">
                     <span>📘</span> دليل المعماري (The Manual)
                 </h2>
                 <button @click="toggleGuide" class="bg-white rounded-full p-2 text-slate-500 hover:bg-red-50 hover:text-red-500 transition-colors shadow-sm w-10 h-10 flex items-center justify-center font-bold">✕</button>
@@ -423,13 +430,13 @@
                 <iframe src="https://drive.google.com/file/d/1lLlmpMWEpmlzaxhrhYQVfu_vXWmaxrlb/preview" class="w-full h-full" frameborder="0">
                     <div class="flex flex-col items-center justify-center h-full p-10 text-center">
                         <p class="text-slate-500 mb-4">متصفحك لا يدعم عرض PDF مباشرة.</p>
-                        <a href="https://drive.google.com/file/d/1lLlmpMWEpmlzaxhrhYQVfu_vXWmaxrlb/view?usp=sharing" target="_blank" class="bg-blue-600 text-white px-6 py-3 rounded-xl font-bold">تحميل الدليل</a>
+                        <a href="https://drive.google.com/file/d/1lLlmpMWEpmlzaxhrhYQVfu_vXWmaxrlb/view?usp=sharing" target="_blank" class="bg-cyan-600 text-white px-6 py-3 rounded-xl font-bold">تحميل الدليل</a>
                     </div>
                 </iframe>
             </div>
 
             <div class="bg-white p-4 border-t border-slate-200 text-center md:text-right">
-                <a href="https://drive.google.com/file/d/1lLlmpMWEpmlzaxhrhYQVfu_vXWmaxrlb/view?usp=sharing" target="_blank" class="inline-flex items-center gap-2 text-blue-600 font-bold hover:underline">
+                <a href="https://drive.google.com/file/d/1lLlmpMWEpmlzaxhrhYQVfu_vXWmaxrlb/view?usp=sharing" target="_blank" class="inline-flex items-center gap-2 text-cyan-600 font-bold hover:underline">
                     <span>📥</span> تحميل ملف PDF
                 </a>
             </div>
@@ -457,7 +464,8 @@ createApp({
             currentTestResult: null,
             lastAnswerNote: null,
             showProgram: false,
-            showGuide: false, // New state
+            showGuide: false,
+            mobileLogOpen: false, // New Mobile Toggle
             
             // Level Display Logic
             displayedLevel: null,
@@ -469,10 +477,10 @@ createApp({
                 { text: 'هل هناك تنميل وضعف شديد في الساقين؟', options: [{ label: 'نعم', flag: true, note: 'علامة عصبية حمراء.' }, { label: 'لا', flag: false, note: 'آمن.' }] }
             ],
 
-            // === 2. KRAUS-WEBER TESTS (Deep Explanation) ===
+            // === 2. KRAUS-WEBER TESTS ===
             physicalTests: [
                 { 
-                    id: 'kw1', title: '1. البطن والساقين ممدودتين (Abs+Psoas)', image: 'img/test1.jpg', 
+                    id: 'kw1', title: '1. البطن والساقين ممدودتين (Abs+Psoas)', image: 'img/test1.png', 
                     instruction: `<ul><li>استلقِ على ظهرك، يديك خلف رقبتك، وساقيك ممدودتين.</li><li>ثبت قدميك (تحت كنبة أو بمساعدة شخص).</li><li>حاول الجلوس حتى وضعية الجلوس الكاملة.</li></ul>`, 
                     question: 'هل نجحت في الجلوس؟', 
                     options: [ 
@@ -491,7 +499,7 @@ createApp({
                     ] 
                 },
                 { 
-                    id: 'kw2', title: '2. البطن مع ثني الركبة (Pure Abs)', image: 'img/test2.jpg', 
+                    id: 'kw2', title: '2. البطن مع ثني الركبة (Pure Abs)', image: 'img/test2.png', 
                     instruction: `<ul><li>استلقِ على ظهرك واثنِ ركبتيك.</li><li>ثبت قدميك.</li><li>حاول الجلوس بالكامل دون استخدام اليدين.</li></ul>`, 
                     question: 'هل نجحت؟', 
                     options: [ 
@@ -510,7 +518,7 @@ createApp({
                     ] 
                 },
                 { 
-                    id: 'kw3', title: '3. رفع الساقين (Lower Abs)', image: 'img/test3.jpg', 
+                    id: 'kw3', title: '3. رفع الساقين (Lower Abs)', image: 'img/test3.png', 
                     instruction: `<ul><li>استلقِ على ظهرك، ساقيك ممدودتين.</li><li>ارفع ساقيك 25 سم عن الأرض لمدة 10 ثوانٍ.</li><li>يجب ألا يتقوس ظهرك.</li></ul>`, 
                     question: 'هل صمدت 10 ثوانٍ دون تقوس الظهر؟', 
                     options: [ 
@@ -529,7 +537,7 @@ createApp({
                     ] 
                 },
                 { 
-                    id: 'kw4', title: '4. رفع الظهر العلوي', image: 'img/test4.jpg', 
+                    id: 'kw4', title: '4. رفع الظهر العلوي', image: 'img/test4.png', 
                     instruction: `<ul><li>استلقِ على بطنك (وسادة تحت الحوض).</li><li>ارفع رأسك وكتفيك عن الأرض لمدة 10 ثوانٍ.</li></ul>`, 
                     question: 'هل صمدت 10 ثوانٍ؟', 
                     options: [ 
@@ -548,7 +556,7 @@ createApp({
                     ] 
                 },
                 { 
-                    id: 'kw5', title: '5. رفع الظهر السفلي', image: 'img/test5.jpg', 
+                    id: 'kw5', title: '5. رفع الظهر السفلي', image: 'img/test5.png', 
                     instruction: `<ul><li>استلقِ على بطنك.</li><li>ارفع ساقيك المستقيمتين معاً لمدة 10 ثوانٍ.</li></ul>`, 
                     question: 'هل نجحت؟', 
                     options: [ 
@@ -567,7 +575,7 @@ createApp({
                     ] 
                 },
                 { 
-                    id: 'kw6', title: '6. المرونة (Flexibility)', image: 'img/test6.jpg', 
+                    id: 'kw6', title: '6. المرونة (Flexibility)', image: 'img/test6.png', 
                     instruction: `<ul><li>قف مستقيماً.</li><li>انحنِ وحاول لمس الأرض بأطراف أصابعك دون ثني الركبة.</li></ul>`, 
                     question: 'هل لمست الأرض؟', 
                     options: [ 
