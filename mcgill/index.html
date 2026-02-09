@@ -212,16 +212,16 @@
             <div v-if="currentPhase === 'physical'" class="max-w-7xl mx-auto h-full flex flex-col lg:flex-row gap-6 md:gap-8 pb-24">
                 <div class="w-full lg:w-1/2 flex flex-col gap-4 md:gap-6">
                     <div class="bg-white p-2 md:p-3 rounded-2xl shadow-xl border border-slate-200">
-                        <div class="relative aspect-[4/3] bg-slate-100 rounded-xl overflow-hidden flex items-center justify-center group">
+                        <div class="relative h-48 md:h-64 w-full bg-slate-100 rounded-xl overflow-hidden flex items-center justify-center group">
                             <img :src="'img/' + currentPhysicalTest.image" :alt="currentPhysicalTest.title" class="w-full h-full object-contain p-2">
                             <div class="absolute top-2 left-2 md:top-4 md:left-4 bg-white/90 backdrop-blur text-slate-800 text-[10px] md:text-xs font-bold px-2 py-1 md:px-3 rounded-full shadow-sm">
                                 وضعية الاختبار
                             </div>
                         </div>
                     </div>
-                    <div class="bg-white p-6 md:p-10 rounded-2xl shadow-md border-t-4 border-emerald-500 lg:flex-1 lg:overflow-y-auto">
-                        <h3 class="text-emerald-800 font-bold mb-4 md:mb-6 flex items-center gap-2 text-xl md:text-2xl"><span>📋</span> تعليمات الأداء الدقيقة:</h3>
-                        <div class="text-slate-700 text-lg md:text-xl leading-loose space-y-4 md:space-y-6 marker:text-emerald-500 font-medium" v-html="currentPhysicalTest.instruction"></div>
+                    <div class="bg-white p-4 md:p-6 rounded-2xl shadow-md border-t-4 border-emerald-500 lg:flex-1 lg:overflow-y-auto">
+                        <h3 class="text-emerald-800 font-bold mb-3 flex items-center gap-2 text-lg md:text-xl"><span>📋</span> تعليمات الأداء الدقيقة:</h3>
+                        <div class="text-slate-700 text-base md:text-lg leading-relaxed space-y-3 marker:text-emerald-500 font-medium" v-html="currentPhysicalTest.instruction"></div>
                     </div>
                 </div>
 
