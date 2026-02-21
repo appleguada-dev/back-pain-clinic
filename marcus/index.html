@@ -85,6 +85,18 @@
                 </div>
             </div>
 
+
+            <div>
+                <h3 class="text-xs font-bold text-slate-400 uppercase tracking-widest mb-3 border-b border-slate-700 pb-2">التنقل</h3>
+                <div class="space-y-2">
+                    <button @click="goToPhase('intro')" class="w-full text-right px-3 py-2 rounded-lg text-xs font-bold" :class="currentPhase==='intro' ? 'bg-cyan-600 text-white' : 'bg-slate-700 text-slate-200'">الملف الشخصي</button>
+                    <button @click="goToPhase('history')" class="w-full text-right px-3 py-2 rounded-lg text-xs font-bold" :class="currentPhase==='history' ? 'bg-cyan-600 text-white' : 'bg-slate-700 text-slate-200'">الأمان والاستبيان</button>
+                    <button @click="goToPhase('physical')" class="w-full text-right px-3 py-2 rounded-lg text-xs font-bold" :class="currentPhase==='physical' ? 'bg-cyan-600 text-white' : 'bg-slate-700 text-slate-200'">الاختبارات</button>
+                    <button @click="goToPhase('workout')" class="w-full text-right px-3 py-2 rounded-lg text-xs font-bold" :class="currentPhase==='workout' ? 'bg-cyan-600 text-white' : 'bg-slate-700 text-slate-200'">التمارين</button>
+                    <button @click="goToPhase('final')" class="w-full text-right px-3 py-2 rounded-lg text-xs font-bold" :class="currentPhase==='final' ? 'bg-cyan-600 text-white' : 'bg-slate-700 text-slate-200'">التقرير</button>
+                </div>
+            </div>
+
             <div>
                 <h3 class="text-xs font-bold text-slate-400 uppercase tracking-widest mb-3 border-b border-slate-700 pb-2 flex justify-between items-center">
                     <span>نقاط الضعف (Failures)</span>
@@ -118,6 +130,10 @@
                 <h2 v-else-if="currentPhase === 'physical'" class="text-base md:text-xl font-bold text-slate-800 flex items-center gap-2">
                     <span class="bg-cyan-100 text-cyan-700 p-1 md:p-1.5 rounded-lg text-xs md:text-sm">2</span>
                     اختبارات كراوس-ويبر ({{ physicalIndex + 1 }}/6)
+                </h2>
+                <h2 v-else-if="currentPhase === 'workout'" class="text-base md:text-xl font-bold text-slate-800 flex items-center gap-2">
+                    <span class="bg-orange-100 text-orange-700 w-6 h-6 md:w-auto md:h-auto md:p-1.5 flex items-center justify-center rounded-lg text-xs md:text-sm">3</span>
+                    <span>برنامج التمارين</span>
                 </h2>
                 <h2 v-else-if="currentPhase === 'final'" class="text-base md:text-xl font-bold text-slate-800 flex items-center gap-2">
                     <span class="bg-purple-100 text-purple-700 p-1 md:p-1.5 rounded-lg text-xs md:text-sm">3</span>
@@ -161,6 +177,16 @@
                             <input v-model.number="user.age" type="number" class="w-full bg-white border border-slate-300 rounded-lg p-2 md:p-3 outline-none focus:border-cyan-500 transition-colors">
                         </div>
                     </div>
+                    <div class="mb-4 text-right">
+                        <button @click="saveProfile" :disabled="!user.name" class="w-full mb-3 bg-slate-800 text-white py-2 rounded-lg text-sm font-bold disabled:opacity-50">حفظ الملف الحالي</button>
+                        <div v-if="savedProfiles.length" class="bg-white border border-slate-200 rounded-xl p-3 max-h-36 overflow-y-auto">
+                            <p class="text-xs font-bold text-slate-500 mb-2">الملفات المحفوظة</p>
+                            <div v-for="profile in savedProfiles" :key="profile.id" class="flex items-center justify-between mb-2">
+                                <button @click="loadProfile(profile.id)" class="text-xs text-cyan-700 font-bold">{{ profile.name }} ({{ profile.age || '—' }})</button>
+                                <button @click="deleteProfile(profile.id)" class="text-xs text-red-500">حذف</button>
+                            </div>
+                        </div>
+                    </div>
                     <button @click="startApp" :disabled="!user.name || !disclaimerAccepted" class="w-full bg-cyan-600 text-white py-4 rounded-xl font-bold text-base md:text-lg shadow-lg hover:bg-cyan-700 transition-all transform hover:-translate-y-1 disabled:opacity-50 disabled:cursor-not-allowed">
                         ابدأ التقييم الآن
                     </button>
@@ -188,7 +214,7 @@
                     <div v-if="!safetyPassed" class="bg-white rounded-2xl shadow-xl p-8 mb-6 animate-fade-in-up border-l-8 border-red-500">
                         <h3 class="text-2xl font-bold text-red-800 mb-4">توقف!</h3>
                         <p class="text-slate-600 text-lg">بناءً على إجابتك، حالتك تتطلب عناية طبية فورية ولا تناسب التمارين المنزلية حالياً.</p>
-                        <button @click="resetApp" class="mt-6 px-6 py-3 bg-slate-800 text-white rounded-lg">إعادة البدء</button>
+                        <button @click="resetApp" class="mt-6 px-6 py-3 bg-slate-800 text-white rounded-lg">إعادة البدء</button></div>
                     </div>
 
                     <div v-else>
@@ -213,7 +239,7 @@
                                 <h4 class="font-bold text-blue-900 text-xl">توجيه طبي:</h4>
                             </div>
                             <p class="text-slate-800 text-lg leading-8 mb-8 font-medium text-justify">{{ lastAnswerNote }}</p>
-                            <button @click="nextHistoryQuestion" class="w-full bg-blue-600 text-white py-4 rounded-xl font-bold hover:bg-blue-700 shadow-lg transition-transform hover:scale-[1.01]">
+                            <div class="flex gap-2"><button v-if="historyIndex > 0" @click="prevHistoryQuestion" class="px-4 bg-slate-200 text-slate-800 py-4 rounded-xl font-bold">السابق</button><button @click="nextHistoryQuestion" class="flex-1 bg-blue-600 text-white py-4 rounded-xl font-bold hover:bg-blue-700 shadow-lg transition-transform hover:scale-[1.01]">
                                 التالي &larr;
                             </button>
                         </div>
@@ -283,13 +309,27 @@
                             </div>
 
                             <div class="p-6 bg-slate-50 border-t border-slate-100">
-                                <button @click="nextPhysicalTest" class="w-full bg-slate-900 text-white py-4 rounded-xl font-bold hover:bg-black shadow-lg flex justify-center items-center gap-2 transition-all hover:scale-[1.02]">
+                                <div class="flex gap-2"><button v-if="physicalIndex > 0" @click="prevPhysicalTest" class="px-4 bg-slate-200 text-slate-800 py-3 rounded-xl font-bold">السابق</button><button @click="nextPhysicalTest" class="w-full bg-slate-900 text-white py-4 rounded-xl font-bold hover:bg-black shadow-lg flex justify-center items-center gap-2 transition-all hover:scale-[1.02]">
                                     <span>حفظ النتيجة والانتقال للتالي</span>
                                     <span>&larr;</span>
                                 </button>
                             </div>
                         </div>
                     </transition>
+                </div>
+            </div>
+
+
+            <div v-if="currentPhase === 'workout'" class="max-w-5xl mx-auto pb-24">
+                <div class="bg-white rounded-2xl shadow-xl p-6 md:p-8">
+                    <h3 class="text-2xl font-black mb-4">قسم التمارين (Norman Marcus)</h3>
+                    <p class="text-slate-600 mb-6">اختر المستوى المناسب لك وارجع له في أي وقت.</p>
+                    <div class="grid md:grid-cols-3 gap-4">
+                        <button v-for="level in levels" :key="level.id" @click="openSpecificLevel(level.id)" class="border rounded-xl p-4 text-right hover:border-cyan-500">
+                            <h4 class="font-bold">{{ level.name }}</h4>
+                            <p class="text-sm text-slate-600">{{ level.focus }}</p>
+                        </button>
+                    </div>
                 </div>
             </div>
 
@@ -466,6 +506,8 @@ createApp({
             showProgram: false,
             showGuide: false,
             mobileLogOpen: false, // New Mobile Toggle
+            savedProfiles: [],
+            profileStorageKey: 'marcusProfilesV1',
             
             // Level Display Logic
             displayedLevel: null,
@@ -661,6 +703,7 @@ createApp({
             if (option.flag) { this.safetyPassed = false; return; }
             this.lastAnswerNote = option.note;
         },
+        prevHistoryQuestion() { this.lastAnswerNote = null; if (this.historyIndex > 0) this.historyIndex--; },
         nextHistoryQuestion() {
             this.lastAnswerNote = null;
             if (this.historyIndex < this.historyQuestions.length - 1) this.historyIndex++;
@@ -674,17 +717,17 @@ createApp({
             
             if (!option.passed) this.failedTests.push({ name: this.currentPhysicalTest.title, reason: option.feedback });
         },
+        prevPhysicalTest() { this.currentTestResult = null; if (this.physicalIndex > 0) this.physicalIndex--; },
         nextPhysicalTest() {
             this.currentTestResult = null;
             if (this.physicalIndex < this.physicalTests.length - 1) {
                 this.physicalIndex++;
             } else {
-                this.currentPhase = 'final';
+                this.currentPhase = 'workout';
                 confetti({ particleCount: 150, spread: 70, origin: { y: 0.6 }, colors: ['#06b6d4', '#0ea5e9'] });
             }
         },
         toggleProgram() { 
-            // Default to recommended if no specific one clicked
             if(!this.displayedLevel) this.displayedLevel = this.recommendedLevel;
             this.showProgram = !this.showProgram; 
         },
@@ -692,8 +735,27 @@ createApp({
             this.displayedLevel = this.levels[id];
             this.showProgram = true;
         },
-        toggleGuide() { this.showGuide = !this.showGuide; }, // Toggle Guide
+        goToPhase(phase) { this.currentPhase = phase; },
+        saveProfile() {
+            const entry = { id: Date.now(), name: this.user.name, age: this.user.age, state: { currentPhase: this.currentPhase, historyIndex: this.historyIndex, physicalIndex: this.physicalIndex, disclaimerAccepted: this.disclaimerAccepted, safetyPassed: this.safetyPassed, failedTests: this.failedTests, physicalLog: this.physicalLog } };
+            this.savedProfiles.unshift(entry);
+            localStorage.setItem(this.profileStorageKey, JSON.stringify(this.savedProfiles));
+        },
+        loadProfile(id) {
+            const profile = this.savedProfiles.find(p => p.id === id);
+            if (!profile) return;
+            this.user.name = profile.name; this.user.age = profile.age;
+            Object.assign(this, profile.state);
+        },
+        deleteProfile(id) {
+            this.savedProfiles = this.savedProfiles.filter(p => p.id !== id);
+            localStorage.setItem(this.profileStorageKey, JSON.stringify(this.savedProfiles));
+        },
+        toggleGuide() { this.showGuide = !this.showGuide; },
         resetApp() { location.reload(); }
+    },
+    mounted() {
+        try { this.savedProfiles = JSON.parse(localStorage.getItem(this.profileStorageKey) || '[]'); } catch(e) { this.savedProfiles = []; }
     }
 }).mount('#app');
 </script>
