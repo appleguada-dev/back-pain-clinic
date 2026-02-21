@@ -81,14 +81,12 @@
                 </div>
             </div>
 
-
             <div>
                 <h3 class="text-xs font-bold text-slate-400 uppercase tracking-widest mb-3 border-b border-slate-700 pb-2">التنقل بين الأقسام</h3>
                 <div class="space-y-2">
                     <button @click="goToPhase('intro')" class="w-full text-right px-3 py-2 rounded-lg text-xs font-bold" :class="currentPhase==='intro' ? 'bg-emerald-600 text-white' : 'bg-slate-700 text-slate-200'">الملف الشخصي</button>
                     <button @click="goToPhase('history')" :disabled="!isPhaseAccessible('history')" class="w-full text-right px-3 py-2 rounded-lg text-xs font-bold disabled:opacity-50 disabled:cursor-not-allowed" :class="currentPhase==='history' ? 'bg-emerald-600 text-white' : 'bg-slate-700 text-slate-200'">الاستبيان</button>
                     <button @click="goToPhase('physical')" :disabled="!isPhaseAccessible('physical')" class="w-full text-right px-3 py-2 rounded-lg text-xs font-bold disabled:opacity-50 disabled:cursor-not-allowed" :class="currentPhase==='physical' ? 'bg-emerald-600 text-white' : 'bg-slate-700 text-slate-200'">الاختبارات</button>
-                    <button @click="goToPhase('workout')" :disabled="!isPhaseAccessible('workout')" class="w-full text-right px-3 py-2 rounded-lg text-xs font-bold disabled:opacity-50 disabled:cursor-not-allowed" :class="currentPhase==='workout' ? 'bg-emerald-600 text-white' : 'bg-slate-700 text-slate-200'">التمارين</button>
                     <button @click="goToPhase('final')" :disabled="!isPhaseAccessible('final')" class="w-full text-right px-3 py-2 rounded-lg text-xs font-bold disabled:opacity-50 disabled:cursor-not-allowed" :class="currentPhase==='final' ? 'bg-emerald-600 text-white' : 'bg-slate-700 text-slate-200'">التقرير النهائي</button>
                 </div>
                 <p v-if="lockHint" class="text-[11px] text-amber-300 bg-amber-900/30 border border-amber-700 rounded-lg px-2 py-2 mt-2">{{ lockHint }}</p>
@@ -128,10 +126,6 @@
                 <h2 v-else-if="currentPhase === 'physical'" class="text-base md:text-xl font-bold text-slate-800 flex items-center gap-2">
                     <span class="bg-emerald-100 text-emerald-700 w-6 h-6 md:w-auto md:h-auto md:p-1.5 flex items-center justify-center rounded-lg text-xs md:text-sm">2</span>
                     <span class="truncate">الاختبار {{ physicalIndex + 1 }} / {{ physicalTests.length }}</span>
-                </h2>
-                <h2 v-else-if="currentPhase === 'workout'" class="text-base md:text-xl font-bold text-slate-800 flex items-center gap-2">
-                    <span class="bg-orange-100 text-orange-700 w-6 h-6 md:w-auto md:h-auto md:p-1.5 flex items-center justify-center rounded-lg text-xs md:text-sm">3</span>
-                    <span>التمارين العلاجية</span>
                 </h2>
                 <h2 v-else-if="currentPhase === 'final'" class="text-base md:text-xl font-bold text-slate-800 flex items-center gap-2">
                     <span class="bg-purple-100 text-purple-700 w-6 h-6 md:w-auto md:h-auto md:p-1.5 flex items-center justify-center rounded-lg text-xs md:text-sm">3</span>
@@ -304,29 +298,13 @@
                                 <div class="flex gap-2">
                                 <button v-if="physicalIndex > 0" @click="prevPhysicalTest" class="px-4 bg-slate-200 text-slate-800 py-3 rounded-xl font-bold">السابق</button>
                                 <button @click="nextPhysicalTest" class="w-full bg-slate-900 text-white py-4 rounded-xl font-bold hover:bg-black shadow-lg flex justify-center items-center gap-2 transition-all hover:scale-[1.02]">
-                                    <span>حفظ النتيجة والانتقال للتالي</span>
+                                    <span>حفظ النتيجة والانتقال للتقرير</span>
                                     <span>&larr;</span>
                                 </button>
+                                </div>
                             </div>
-                        </div>
+                        </div> 
                     </transition>
-                </div>
-            </div>
-
-
-            <div v-if="currentPhase === 'workout'" class="max-w-5xl mx-auto pb-24">
-                <div class="bg-white rounded-2xl shadow-xl p-6 md:p-8">
-                    <h3 class="text-2xl font-black mb-4">قسم التمارين العلاجية (McGill)</h3>
-                    <p class="text-slate-600 mb-6">يمكنك الرجوع لهذا القسم في أي وقت للتدرب بأمان.</p>
-                    <div class="grid md:grid-cols-3 gap-4">
-                        <div class="border rounded-xl p-4" v-for="item in workoutPlan" :key="item.name">
-                            <h4 class="font-bold mb-2">{{ item.name }}</h4>
-                            <p class="text-sm text-slate-600">{{ item.details }}</p>
-                        </div>
-                    </div>
-                    <div class="mt-6 flex justify-end">
-                        <button @click="goToPhase('final')" class="bg-emerald-600 text-white px-6 py-3 rounded-xl font-bold hover:bg-emerald-700">عرض التقرير النهائي</button>
-                    </div>
                 </div>
             </div>
 
@@ -361,7 +339,7 @@
                             </div>
                             <div class="p-6 md:p-8">
                                 <ul class="space-y-3 md:space-y-4">
-                                    <li v-for="rec in finalDiagnosis.dos" class="flex items-start gap-3 md:gap-4 p-2 md:p-3 rounded-xl hover:bg-slate-50 transition-colors border border-transparent hover:border-slate-100">
+                                    <li v-for="(rec, index) in finalDiagnosis.dos" :key="'dos-'+index" class="flex items-start gap-3 md:gap-4 p-2 md:p-3 rounded-xl hover:bg-slate-50 transition-colors border border-transparent hover:border-slate-100">
                                         <div class="w-5 h-5 md:w-6 md:h-6 bg-green-100 rounded-full flex items-center justify-center shrink-0 mt-0.5 text-green-600 text-[10px] md:text-xs font-bold">✓</div>
                                         <span class="text-slate-700 text-sm md:text-base font-medium leading-relaxed">{{ rec }}</span>
                                     </li>
@@ -379,7 +357,7 @@
                             </div>
                             <div class="p-6 md:p-8">
                                 <ul class="space-y-3 md:space-y-4">
-                                    <li v-for="rec in finalDiagnosis.avoids" class="flex items-start gap-3 md:gap-4 p-2 md:p-3 rounded-xl hover:bg-slate-50 transition-colors border border-transparent hover:border-slate-100">
+                                    <li v-for="(rec, index) in finalDiagnosis.avoids" :key="'avoid-'+index" class="flex items-start gap-3 md:gap-4 p-2 md:p-3 rounded-xl hover:bg-slate-50 transition-colors border border-transparent hover:border-slate-100">
                                         <div class="w-5 h-5 md:w-6 md:h-6 bg-red-100 rounded-full flex items-center justify-center shrink-0 mt-0.5 text-red-600 text-[10px] md:text-xs font-bold">✕</div>
                                         <span class="text-slate-700 text-sm md:text-base font-medium leading-relaxed">{{ rec }}</span>
                                     </li>
@@ -388,6 +366,18 @@
                         </div>
                     </div>
 
+                    <div class="mb-12 md:mb-16 print-break">
+                        <div class="text-center mb-8 md:mb-10">
+                            <h2 class="text-xl md:text-3xl font-bold text-slate-800 inline-block border-b-4 border-emerald-500 pb-2">قسم التمارين العلاجية (McGill)</h2>
+                            <p class="text-slate-500 mt-2 text-sm md:text-base">يمكنك الرجوع لهذا القسم في أي وقت للتدرب بأمان.</p>
+                        </div>
+                        <div class="grid md:grid-cols-3 gap-4 md:gap-6">
+                            <div class="bg-white border rounded-2xl p-5 md:p-6 shadow-md hover:shadow-lg transition-shadow" v-for="item in workoutPlan" :key="item.name">
+                                <h4 class="font-bold mb-2 text-lg text-emerald-800">{{ item.name }}</h4>
+                                <p class="text-sm text-slate-600 leading-relaxed">{{ item.details }}</p>
+                            </div>
+                        </div>
+                    </div>
                     <div class="mb-16 print-break hidden md:block">
                         <h3 class="text-xl font-black text-slate-800 mb-8 border-r-8 border-slate-800 pr-4">سجل الملاحظات التفصيلي (للمراجعة مع الطبيب)</h3>
                         
@@ -464,7 +454,7 @@
         </div>
     </button>
 
-    <div v-if="showBig3" class="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-end md:items-center justify-center p-0 md:p-4" @click.self="toggleBig3">
+    <div v-if="showBig3" class="fixed inset-0 z-50 bg-black/90 backdrop-blur-sm flex items-end md:items-center justify-center p-0 md:p-4" @click.self="toggleBig3">
         <div class="bg-white w-full max-w-4xl h-[85vh] md:h-auto rounded-t-[30px] md:rounded-[40px] p-6 md:p-10 shadow-2xl relative animate-fade-in-up overflow-y-auto">
             <button @click="toggleBig3" class="absolute top-4 right-4 bg-slate-100 rounded-full p-2 text-slate-500 hover:bg-slate-200 transition-colors">✕</button>
             <div class="text-center mb-6 md:mb-10 mt-4 md:mt-0">
@@ -535,31 +525,31 @@ createApp({
             physicalIndex: 0,
             user: { name: '', age: '' },
             disclaimerAccepted: false,
-            mobileMenu: false, // For mobile sidebar toggle
+            mobileMenu: false,
             evidenceLog: [],
             historyLog: [],   
             physicalLog: [],  
             lastAnswerNote: null,
             currentTestResult: null,
             showBig3: false,
-            showGuide: false, // Added guide state
+            showGuide: false,
             savedProfiles: [],
             profileStorageKey: 'mcgillProfilesV1',
             profileReady: false,
             historyCompleted: false,
             physicalCompleted: false,
             lockHint: '',
+            
+            // بيانات التمارين
             workoutPlan: [
                 { name: 'McGill Curl-Up', details: '3 مجموعات x 5-8 تكرارات مع الحفاظ على العمود الفقري محايداً.' },
                 { name: 'Side Plank', details: 'الثبات 10-20 ثانية لكل جهة، 3 جولات.' },
                 { name: 'Bird Dog', details: 'حركة بطيئة مع تثبيت الجذع، 5-8 تكرارات لكل جهة.' }
             ],
-            
-            // Accumulated lists
+
             globalDos: [],
             globalAvoids: [],
 
-            // === 1. HISTORY QUESTIONS (Extensive) ===
             historyQuestions: [
                 { 
                     id: 'q1', 
@@ -643,7 +633,6 @@ createApp({
                 }
             ],
 
-            // === 2. PHYSICAL TESTS (Extensive) ===
             physicalTests: [
                 { 
                     id: 't1', title: '1. اختبار ضغط الكرسي (Compression)', image: 'test1.png', 
@@ -800,7 +789,6 @@ createApp({
             return (current / totalSteps) * 100;
         },
         finalDiagnosis() {
-            // Priority Essentials based on Patterns (Deduplicated logic)
             let flexCount = this.evidenceLog.filter(e => e.type.includes('Flexion') || e.type.includes('Disc')).length;
             let extCount = this.evidenceLog.filter(e => e.type.includes('Extension') || e.type.includes('Facet')).length;
             let nerveCount = this.evidenceLog.filter(e => e.type.includes('Nerve') || e.type.includes('Tension')).length;
@@ -810,7 +798,6 @@ createApp({
             let dos = ["المشي المتقطع (Interval Walking)", "تصلب الجذع (The Big 3)", "النوم بوضع محايد"];
             let avoids = ["الجلوس أو الوقوف لفترات طويلة دون حركة"];
 
-            // Smart Append based on Dominant Pattern
             if (flexCount >= 1 && flexCount >= extCount) {
                 dos.push("استخدام وضعية الاستلقاء على البطن للراحة", "Hip Hinge لكل انحناء");
                 avoids.push("الجلوس الطويل بظهر منحني", "لمس أصابع القدم", "تمارين البطن (Sit-ups)");
@@ -836,7 +823,6 @@ createApp({
                 avoids.push("تمارين الليونة والمرونة (Yoga)", "طقطقة الظهر");
             }
 
-            // Merge with global pushed items from tests
             if (this.globalDos.length > 0) dos = [...dos, ...this.globalDos];
             if (this.globalAvoids.length > 0) avoids = [...avoids, ...this.globalAvoids];
 
@@ -854,7 +840,7 @@ createApp({
         },
         printSection() { window.print(); },
         toggleBig3() { this.showBig3 = !this.showBig3; },
-        toggleGuide() { this.showGuide = !this.showGuide; }, // Added method
+        toggleGuide() { this.showGuide = !this.showGuide; }, 
         async shareReport() {
             const text = `تشخيص BodyArchitect:\n✅ افعل: ${this.finalDiagnosis.dos.join(', ')}\n❌ تجنب: ${this.finalDiagnosis.avoids.join(', ')}`;
             if (navigator.share) {
@@ -882,7 +868,6 @@ createApp({
             }
         },
         handlePhysicalAnswer(option) {
-            // Fix: Handle cases where dos/avoids might be undefined in the option object
             const dos = option.dos ? option.dos : [];
             const avoids = option.avoids ? option.avoids : [];
 
@@ -904,7 +889,6 @@ createApp({
                 this.evidenceLog.push({ source: `Test ${this.physicalIndex + 1}`, type: option.diagnosis, note: option.detail });
             }
             
-            // Safer push
             if (dos.length > 0) this.globalDos.push(...dos);
             if (avoids.length > 0) this.globalAvoids.push(...avoids);
         },
@@ -915,7 +899,7 @@ createApp({
                 this.physicalIndex++;
             } else {
                 this.physicalCompleted = true;
-                this.currentPhase = 'final';
+                this.currentPhase = 'final'; // الانتقال المباشر للتقرير النهائي
                 confetti({ particleCount: 150, spread: 70, origin: { y: 0.6 } });
             }
         },
@@ -923,7 +907,7 @@ createApp({
             if (phase === 'intro') return true;
             if (phase === 'history') return this.profileReady;
             if (phase === 'physical') return this.profileReady && this.historyCompleted;
-            if (phase === 'workout' || phase === 'final') return this.profileReady && this.historyCompleted && this.physicalCompleted;
+            if (phase === 'final') return this.profileReady && this.historyCompleted && this.physicalCompleted;
             return false;
         },
         goToPhase(phase) {
@@ -935,8 +919,8 @@ createApp({
             this.currentPhase = phase;
         },
         syncProgressState() {
-            this.historyCompleted = this.historyCompleted || this.historyIndex >= this.historyQuestions.length - 1 || this.currentPhase === 'physical' || this.currentPhase === 'workout' || this.currentPhase === 'final';
-            this.physicalCompleted = this.physicalCompleted || this.physicalIndex >= this.physicalTests.length - 1 && (this.currentPhase === 'workout' || this.currentPhase === 'final');
+            this.historyCompleted = this.historyCompleted || this.historyIndex >= this.historyQuestions.length - 1 || this.currentPhase === 'physical' || this.currentPhase === 'final';
+            this.physicalCompleted = this.physicalCompleted || this.physicalIndex >= this.physicalTests.length - 1 && this.currentPhase === 'final';
             if (this.currentPhase === 'workout') this.currentPhase = 'final';
         },
         saveProfile() {
