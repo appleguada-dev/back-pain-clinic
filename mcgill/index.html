@@ -81,6 +81,20 @@
                 </div>
             </div>
 
+
+            <div>
+                <h3 class="text-xs font-bold text-slate-400 uppercase tracking-widest mb-3 border-b border-slate-700 pb-2">التنقل بين الأقسام</h3>
+                <div class="space-y-2">
+                    <button @click="goToPhase('intro')" class="w-full text-right px-3 py-2 rounded-lg text-xs font-bold" :class="currentPhase==='intro' ? 'bg-emerald-600 text-white' : 'bg-slate-700 text-slate-200'">الملف الشخصي</button>
+                    <button @click="goToPhase('history')" :disabled="!isPhaseAccessible('history')" class="w-full text-right px-3 py-2 rounded-lg text-xs font-bold disabled:opacity-50 disabled:cursor-not-allowed" :class="currentPhase==='history' ? 'bg-emerald-600 text-white' : 'bg-slate-700 text-slate-200'">الاستبيان</button>
+                    <button @click="goToPhase('physical')" :disabled="!isPhaseAccessible('physical')" class="w-full text-right px-3 py-2 rounded-lg text-xs font-bold disabled:opacity-50 disabled:cursor-not-allowed" :class="currentPhase==='physical' ? 'bg-emerald-600 text-white' : 'bg-slate-700 text-slate-200'">الاختبارات</button>
+                    <button @click="goToPhase('workout')" :disabled="!isPhaseAccessible('workout')" class="w-full text-right px-3 py-2 rounded-lg text-xs font-bold disabled:opacity-50 disabled:cursor-not-allowed" :class="currentPhase==='workout' ? 'bg-emerald-600 text-white' : 'bg-slate-700 text-slate-200'">التمارين</button>
+                    <button @click="goToPhase('final')" :disabled="!isPhaseAccessible('final')" class="w-full text-right px-3 py-2 rounded-lg text-xs font-bold disabled:opacity-50 disabled:cursor-not-allowed" :class="currentPhase==='final' ? 'bg-emerald-600 text-white' : 'bg-slate-700 text-slate-200'">التقرير النهائي</button>
+                </div>
+                <p v-if="lockHint" class="text-[11px] text-amber-300 bg-amber-900/30 border border-amber-700 rounded-lg px-2 py-2 mt-2">{{ lockHint }}</p>
+                <p v-else-if="!profileReady" class="text-[11px] text-slate-300">المراحل الأخرى ستفتح بعد حفظ الملف الشخصي وإكمال الاستبيان.</p>
+            </div>
+
             <div>
                 <h3 class="text-xs font-bold text-slate-400 uppercase tracking-widest mb-3 border-b border-slate-700 pb-2 flex justify-between items-center">
                     <span>سجل الأدلة</span>
@@ -114,6 +128,10 @@
                 <h2 v-else-if="currentPhase === 'physical'" class="text-base md:text-xl font-bold text-slate-800 flex items-center gap-2">
                     <span class="bg-emerald-100 text-emerald-700 w-6 h-6 md:w-auto md:h-auto md:p-1.5 flex items-center justify-center rounded-lg text-xs md:text-sm">2</span>
                     <span class="truncate">الاختبار {{ physicalIndex + 1 }} / {{ physicalTests.length }}</span>
+                </h2>
+                <h2 v-else-if="currentPhase === 'workout'" class="text-base md:text-xl font-bold text-slate-800 flex items-center gap-2">
+                    <span class="bg-orange-100 text-orange-700 w-6 h-6 md:w-auto md:h-auto md:p-1.5 flex items-center justify-center rounded-lg text-xs md:text-sm">3</span>
+                    <span>التمارين العلاجية</span>
                 </h2>
                 <h2 v-else-if="currentPhase === 'final'" class="text-base md:text-xl font-bold text-slate-800 flex items-center gap-2">
                     <span class="bg-purple-100 text-purple-700 w-6 h-6 md:w-auto md:h-auto md:p-1.5 flex items-center justify-center rounded-lg text-xs md:text-sm">3</span>
@@ -153,7 +171,20 @@
                             <input v-model.number="user.age" type="number" class="w-full bg-white border border-slate-300 rounded-lg p-3 outline-none focus:border-emerald-500 transition-colors">
                         </div>
                     </div>
-                    <button @click="startApp" :disabled="!user.name || !disclaimerAccepted" class="w-full bg-emerald-600 text-white py-4 rounded-xl font-bold text-lg shadow-lg hover:bg-emerald-700 transition-all transform hover:-translate-y-1 disabled:opacity-50 disabled:cursor-not-allowed">
+
+                    <div class="mb-4 text-right">
+                        <button @click="saveProfile" :disabled="!user.name" class="w-full mb-3 bg-slate-800 text-white py-2 rounded-lg text-sm font-bold disabled:opacity-50">حفظ الملف الحالي</button>
+                        <div v-if="savedProfiles.length" class="bg-white border border-slate-200 rounded-xl p-3 max-h-36 overflow-y-auto">
+                            <p class="text-xs font-bold text-slate-500 mb-2">الملفات المحفوظة</p>
+                            <div v-for="profile in savedProfiles" :key="profile.id" class="flex items-center justify-between mb-2">
+                                <button @click="loadProfile(profile.id)" class="text-xs text-emerald-700 font-bold">{{ profile.name }} ({{ profile.age || '—' }})</button>
+                                <button @click="deleteProfile(profile.id)" class="text-xs text-red-500">حذف</button>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <p v-if="!profileReady" class="text-xs text-amber-700 bg-amber-50 border border-amber-200 rounded-lg p-2 mb-3">احفظ الملف أولاً لتفعيل زر بدء التقييم.</p>
+                    <button @click="startApp" :disabled="!user.name || !disclaimerAccepted || !profileReady" class="w-full bg-emerald-600 text-white py-4 rounded-xl font-bold text-lg shadow-lg hover:bg-emerald-700 transition-all transform hover:-translate-y-1 disabled:opacity-50 disabled:cursor-not-allowed">
                         ابدأ التقييم الآن
                     </button>
                 </div>
@@ -202,9 +233,12 @@
                             <h4 class="font-bold text-blue-900 text-lg md:text-xl">تحليل حالتك الفوري:</h4>
                         </div>
                         <p class="text-slate-800 text-base md:text-lg leading-7 md:leading-8 mb-8 font-medium text-justify">{{ lastAnswerNote }}</p>
-                        <button @click="nextHistoryQuestion" class="w-full bg-blue-600 text-white py-4 rounded-xl font-bold hover:bg-blue-700 shadow-lg transition-transform hover:scale-[1.01]">
-                            السؤال التالي &larr;
-                        </button>
+                        <div class="flex gap-2">
+                            <button v-if="historyIndex > 0" @click="prevHistoryQuestion" class="px-4 bg-slate-200 text-slate-800 py-4 rounded-xl font-bold">السابق</button>
+                            <button @click="nextHistoryQuestion" class="flex-1 bg-blue-600 text-white py-4 rounded-xl font-bold hover:bg-blue-700 shadow-lg transition-transform hover:scale-[1.01]">
+                                السؤال التالي &larr;
+                            </button>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -267,6 +301,8 @@
                             </div>
 
                             <div class="p-5 md:p-6 bg-slate-50 border-t border-slate-100">
+                                <div class="flex gap-2">
+                                <button v-if="physicalIndex > 0" @click="prevPhysicalTest" class="px-4 bg-slate-200 text-slate-800 py-3 rounded-xl font-bold">السابق</button>
                                 <button @click="nextPhysicalTest" class="w-full bg-slate-900 text-white py-4 rounded-xl font-bold hover:bg-black shadow-lg flex justify-center items-center gap-2 transition-all hover:scale-[1.02]">
                                     <span>حفظ النتيجة والانتقال للتالي</span>
                                     <span>&larr;</span>
@@ -274,6 +310,23 @@
                             </div>
                         </div>
                     </transition>
+                </div>
+            </div>
+
+
+            <div v-if="currentPhase === 'workout'" class="max-w-5xl mx-auto pb-24">
+                <div class="bg-white rounded-2xl shadow-xl p-6 md:p-8">
+                    <h3 class="text-2xl font-black mb-4">قسم التمارين العلاجية (McGill)</h3>
+                    <p class="text-slate-600 mb-6">يمكنك الرجوع لهذا القسم في أي وقت للتدرب بأمان.</p>
+                    <div class="grid md:grid-cols-3 gap-4">
+                        <div class="border rounded-xl p-4" v-for="item in workoutPlan" :key="item.name">
+                            <h4 class="font-bold mb-2">{{ item.name }}</h4>
+                            <p class="text-sm text-slate-600">{{ item.details }}</p>
+                        </div>
+                    </div>
+                    <div class="mt-6 flex justify-end">
+                        <button @click="goToPhase('final')" class="bg-emerald-600 text-white px-6 py-3 rounded-xl font-bold hover:bg-emerald-700">عرض التقرير النهائي</button>
+                    </div>
                 </div>
             </div>
 
@@ -490,6 +543,17 @@ createApp({
             currentTestResult: null,
             showBig3: false,
             showGuide: false, // Added guide state
+            savedProfiles: [],
+            profileStorageKey: 'mcgillProfilesV1',
+            profileReady: false,
+            historyCompleted: false,
+            physicalCompleted: false,
+            lockHint: '',
+            workoutPlan: [
+                { name: 'McGill Curl-Up', details: '3 مجموعات x 5-8 تكرارات مع الحفاظ على العمود الفقري محايداً.' },
+                { name: 'Side Plank', details: 'الثبات 10-20 ثانية لكل جهة، 3 جولات.' },
+                { name: 'Bird Dog', details: 'حركة بطيئة مع تثبيت الجذع، 5-8 تكرارات لكل جهة.' }
+            ],
             
             // Accumulated lists
             globalDos: [],
@@ -780,7 +844,14 @@ createApp({
         }
     },
     methods: {
-        startApp() { this.currentPhase = 'history'; },
+        startApp() {
+            if (!this.profileReady) {
+                this.lockHint = 'احفظ الملف الشخصي أولاً لبدء المراحل التالية.';
+                return;
+            }
+            this.lockHint = '';
+            this.currentPhase = 'history';
+        },
         printSection() { window.print(); },
         toggleBig3() { this.showBig3 = !this.showBig3; },
         toggleGuide() { this.showGuide = !this.showGuide; }, // Added method
@@ -800,11 +871,13 @@ createApp({
             this.historyLog.push({ q: this.currentHistoryQ.text, a: option.label, note: option.note });
             this.lastAnswerNote = option.note;
         },
+        prevHistoryQuestion() { this.lastAnswerNote = null; if (this.historyIndex > 0) this.historyIndex--; },
         nextHistoryQuestion() {
             this.lastAnswerNote = null;
             if (this.historyIndex < this.historyQuestions.length - 1) {
                 this.historyIndex++;
             } else {
+                this.historyCompleted = true;
                 this.currentPhase = 'physical';
             }
         },
@@ -835,15 +908,62 @@ createApp({
             if (dos.length > 0) this.globalDos.push(...dos);
             if (avoids.length > 0) this.globalAvoids.push(...avoids);
         },
+        prevPhysicalTest() { this.currentTestResult = null; if (this.physicalIndex > 0) this.physicalIndex--; },
         nextPhysicalTest() {
             this.currentTestResult = null;
             if (this.physicalIndex < this.physicalTests.length - 1) {
                 this.physicalIndex++;
             } else {
+                this.physicalCompleted = true;
                 this.currentPhase = 'final';
                 confetti({ particleCount: 150, spread: 70, origin: { y: 0.6 } });
             }
+        },
+        isPhaseAccessible(phase) {
+            if (phase === 'intro') return true;
+            if (phase === 'history') return this.profileReady;
+            if (phase === 'physical') return this.profileReady && this.historyCompleted;
+            if (phase === 'workout' || phase === 'final') return this.profileReady && this.historyCompleted && this.physicalCompleted;
+            return false;
+        },
+        goToPhase(phase) {
+            if (!this.isPhaseAccessible(phase)) {
+                this.lockHint = 'هذه المرحلة مقفلة حالياً. أكمل المراحل السابقة أولاً.';
+                return;
+            }
+            this.lockHint = '';
+            this.currentPhase = phase;
+        },
+        syncProgressState() {
+            this.historyCompleted = this.historyCompleted || this.historyIndex >= this.historyQuestions.length - 1 || this.currentPhase === 'physical' || this.currentPhase === 'workout' || this.currentPhase === 'final';
+            this.physicalCompleted = this.physicalCompleted || this.physicalIndex >= this.physicalTests.length - 1 && (this.currentPhase === 'workout' || this.currentPhase === 'final');
+            if (this.currentPhase === 'workout') this.currentPhase = 'final';
+        },
+        saveProfile() {
+            const entry = { id: Date.now(), name: this.user.name, age: this.user.age, state: { currentPhase: this.currentPhase, historyIndex: this.historyIndex, physicalIndex: this.physicalIndex, historyCompleted: this.historyCompleted, physicalCompleted: this.physicalCompleted, disclaimerAccepted: this.disclaimerAccepted, evidenceLog: this.evidenceLog, historyLog: this.historyLog, physicalLog: this.physicalLog, globalDos: this.globalDos, globalAvoids: this.globalAvoids } };
+            this.savedProfiles.unshift(entry);
+            localStorage.setItem(this.profileStorageKey, JSON.stringify(this.savedProfiles));
+            this.profileReady = true;
+            this.lockHint = '';
+        },
+        loadProfile(id) {
+            const profile = this.savedProfiles.find(p => p.id === id);
+            if (!profile) return;
+            this.user.name = profile.name; this.user.age = profile.age;
+            Object.assign(this, profile.state);
+            this.profileReady = true;
+            this.syncProgressState();
+            this.lockHint = '';
+        },
+        deleteProfile(id) {
+            this.savedProfiles = this.savedProfiles.filter(p => p.id !== id);
+            localStorage.setItem(this.profileStorageKey, JSON.stringify(this.savedProfiles));
         }
+    },
+    mounted() {
+        try { this.savedProfiles = JSON.parse(localStorage.getItem(this.profileStorageKey) || '[]'); } catch(e) { this.savedProfiles = []; }
+        if (this.savedProfiles.length) { this.profileReady = true; }
+        this.syncProgressState();
     }
 }).mount('#app');
 </script>
