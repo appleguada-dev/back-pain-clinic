@@ -316,7 +316,9 @@
                             </div>
 
                             <div class="p-6 bg-slate-50 border-t border-slate-100">
-                                <div class="flex gap-2"><button v-if="physicalIndex > 0" @click="prevPhysicalTest" class="px-4 bg-slate-200 text-slate-800 py-3 rounded-xl font-bold">السابق</button><button @click="nextPhysicalTest" class="w-full bg-slate-900 text-white py-4 rounded-xl font-bold hover:bg-black shadow-lg flex justify-center items-center gap-2 transition-all hover:scale-[1.02]">
+                                <div class="flex gap-2">
+                                <button v-if="physicalIndex > 0" @click="prevPhysicalTest" class="px-4 bg-slate-200 text-slate-800 py-3 rounded-xl font-bold">السابق</button>
+                                <button @click="nextPhysicalTest" class="w-full bg-slate-900 text-white py-4 rounded-xl font-bold hover:bg-black shadow-lg flex justify-center items-center gap-2 transition-all hover:scale-[1.02]">
                                     <span>حفظ النتيجة والانتقال للتالي</span>
                                     <span>&larr;</span>
                                 </button>
@@ -778,6 +780,7 @@ createApp({
         syncProgressState() {
             this.historyCompleted = this.historyCompleted || this.historyIndex >= this.historyQuestions.length - 1 || this.currentPhase === 'physical' || this.currentPhase === 'workout' || this.currentPhase === 'final';
             this.physicalCompleted = this.physicalCompleted || this.physicalIndex >= this.physicalTests.length - 1 && (this.currentPhase === 'workout' || this.currentPhase === 'final');
+            if (this.currentPhase === 'workout') this.currentPhase = 'final';
         },
         saveProfile() {
             const entry = { id: Date.now(), name: this.user.name, age: this.user.age, state: { currentPhase: this.currentPhase, historyIndex: this.historyIndex, physicalIndex: this.physicalIndex, historyCompleted: this.historyCompleted, physicalCompleted: this.physicalCompleted, disclaimerAccepted: this.disclaimerAccepted, safetyPassed: this.safetyPassed, failedTests: this.failedTests, physicalLog: this.physicalLog } };
