@@ -86,11 +86,13 @@
                 <h3 class="text-xs font-bold text-slate-400 uppercase tracking-widest mb-3 border-b border-slate-700 pb-2">التنقل بين الأقسام</h3>
                 <div class="space-y-2">
                     <button @click="goToPhase('intro')" class="w-full text-right px-3 py-2 rounded-lg text-xs font-bold" :class="currentPhase==='intro' ? 'bg-emerald-600 text-white' : 'bg-slate-700 text-slate-200'">الملف الشخصي</button>
-                    <button @click="goToPhase('history')" class="w-full text-right px-3 py-2 rounded-lg text-xs font-bold" :class="currentPhase==='history' ? 'bg-emerald-600 text-white' : 'bg-slate-700 text-slate-200'">الاستبيان</button>
-                    <button @click="goToPhase('physical')" class="w-full text-right px-3 py-2 rounded-lg text-xs font-bold" :class="currentPhase==='physical' ? 'bg-emerald-600 text-white' : 'bg-slate-700 text-slate-200'">الاختبارات</button>
-                    <button @click="goToPhase('workout')" class="w-full text-right px-3 py-2 rounded-lg text-xs font-bold" :class="currentPhase==='workout' ? 'bg-emerald-600 text-white' : 'bg-slate-700 text-slate-200'">التمارين</button>
-                    <button @click="goToPhase('final')" class="w-full text-right px-3 py-2 rounded-lg text-xs font-bold" :class="currentPhase==='final' ? 'bg-emerald-600 text-white' : 'bg-slate-700 text-slate-200'">التقرير النهائي</button>
+                    <button @click="goToPhase('history')" :disabled="!isPhaseAccessible('history')" class="w-full text-right px-3 py-2 rounded-lg text-xs font-bold disabled:opacity-50 disabled:cursor-not-allowed" :class="currentPhase==='history' ? 'bg-emerald-600 text-white' : 'bg-slate-700 text-slate-200'">الاستبيان</button>
+                    <button @click="goToPhase('physical')" :disabled="!isPhaseAccessible('physical')" class="w-full text-right px-3 py-2 rounded-lg text-xs font-bold disabled:opacity-50 disabled:cursor-not-allowed" :class="currentPhase==='physical' ? 'bg-emerald-600 text-white' : 'bg-slate-700 text-slate-200'">الاختبارات</button>
+                    <button @click="goToPhase('workout')" :disabled="!isPhaseAccessible('workout')" class="w-full text-right px-3 py-2 rounded-lg text-xs font-bold disabled:opacity-50 disabled:cursor-not-allowed" :class="currentPhase==='workout' ? 'bg-emerald-600 text-white' : 'bg-slate-700 text-slate-200'">التمارين</button>
+                    <button @click="goToPhase('final')" :disabled="!isPhaseAccessible('final')" class="w-full text-right px-3 py-2 rounded-lg text-xs font-bold disabled:opacity-50 disabled:cursor-not-allowed" :class="currentPhase==='final' ? 'bg-emerald-600 text-white' : 'bg-slate-700 text-slate-200'">التقرير النهائي</button>
                 </div>
+                <p v-if="lockHint" class="text-[11px] text-amber-300 bg-amber-900/30 border border-amber-700 rounded-lg px-2 py-2 mt-2">{{ lockHint }}</p>
+                <p v-else-if="!profileReady" class="text-[11px] text-slate-300">المراحل الأخرى ستفتح بعد حفظ الملف الشخصي وإكمال الاستبيان.</p>
             </div>
 
             <div>
@@ -180,7 +182,9 @@
                             </div>
                         </div>
                     </div>
-                    <button @click="startApp" :disabled="!user.name || !disclaimerAccepted" class="w-full bg-emerald-600 text-white py-4 rounded-xl font-bold text-lg shadow-lg hover:bg-emerald-700 transition-all transform hover:-translate-y-1 disabled:opacity-50 disabled:cursor-not-allowed">
+                    
+                    <p v-if="!profileReady" class="text-xs text-amber-700 bg-amber-50 border border-amber-200 rounded-lg p-2 mb-3">احفظ الملف أولاً لتفعيل زر بدء التقييم.</p>
+                    <button @click="startApp" :disabled="!user.name || !disclaimerAccepted || !profileReady" class="w-full bg-emerald-600 text-white py-4 rounded-xl font-bold text-lg shadow-lg hover:bg-emerald-700 transition-all transform hover:-translate-y-1 disabled:opacity-50 disabled:cursor-not-allowed">
                         ابدأ التقييم الآن
                     </button>
                 </div>
@@ -533,6 +537,10 @@ createApp({
             showGuide: false, // Added guide state
             savedProfiles: [],
             profileStorageKey: 'mcgillProfilesV1',
+            profileReady: false,
+            historyCompleted: false,
+            physicalCompleted: false,
+            lockHint: '',
             workoutPlan: [
                 { name: 'McGill Curl-Up', details: '3 مجموعات x 5-8 تكرارات مع الحفاظ على العمود الفقري محايداً.' },
                 { name: 'Side Plank', details: 'الثبات 10-20 ثانية لكل جهة، 3 جولات.' },
@@ -828,7 +836,14 @@ createApp({
         }
     },
     methods: {
-        startApp() { this.currentPhase = 'history'; },
+        startApp() {
+            if (!this.profileReady) {
+                this.lockHint = 'احفظ الملف الشخصي أولاً لبدء المراحل التالية.';
+                return;
+            }
+            this.lockHint = '';
+            this.currentPhase = 'history';
+        },
         printSection() { window.print(); },
         toggleBig3() { this.showBig3 = !this.showBig3; },
         toggleGuide() { this.showGuide = !this.showGuide; }, // Added method
@@ -854,6 +869,7 @@ createApp({
             if (this.historyIndex < this.historyQuestions.length - 1) {
                 this.historyIndex++;
             } else {
+                this.historyCompleted = true;
                 this.currentPhase = 'physical';
             }
         },
@@ -890,21 +906,45 @@ createApp({
             if (this.physicalIndex < this.physicalTests.length - 1) {
                 this.physicalIndex++;
             } else {
+                this.physicalCompleted = true;
                 this.currentPhase = 'workout';
                 confetti({ particleCount: 150, spread: 70, origin: { y: 0.6 } });
             }
         },
-        goToPhase(phase) { this.currentPhase = phase; },
+        isPhaseAccessible(phase) {
+            if (phase === 'intro') return true;
+            if (phase === 'history') return this.profileReady;
+            if (phase === 'physical') return this.profileReady && this.historyCompleted;
+            if (phase === 'workout' || phase === 'final') return this.profileReady && this.historyCompleted && this.physicalCompleted;
+            return false;
+        },
+        goToPhase(phase) {
+            if (!this.isPhaseAccessible(phase)) {
+                this.lockHint = 'هذه المرحلة مقفلة حالياً. أكمل المراحل السابقة أولاً.';
+                return;
+            }
+            this.lockHint = '';
+            this.currentPhase = phase;
+        },
+        syncProgressState() {
+            this.historyCompleted = this.historyCompleted || this.historyIndex >= this.historyQuestions.length - 1 || this.currentPhase === 'physical' || this.currentPhase === 'workout' || this.currentPhase === 'final';
+            this.physicalCompleted = this.physicalCompleted || this.physicalIndex >= this.physicalTests.length - 1 && (this.currentPhase === 'workout' || this.currentPhase === 'final');
+        },
         saveProfile() {
-            const entry = { id: Date.now(), name: this.user.name, age: this.user.age, state: { currentPhase: this.currentPhase, historyIndex: this.historyIndex, physicalIndex: this.physicalIndex, disclaimerAccepted: this.disclaimerAccepted, evidenceLog: this.evidenceLog, historyLog: this.historyLog, physicalLog: this.physicalLog, globalDos: this.globalDos, globalAvoids: this.globalAvoids } };
+            const entry = { id: Date.now(), name: this.user.name, age: this.user.age, state: { currentPhase: this.currentPhase, historyIndex: this.historyIndex, physicalIndex: this.physicalIndex, historyCompleted: this.historyCompleted, physicalCompleted: this.physicalCompleted, disclaimerAccepted: this.disclaimerAccepted, evidenceLog: this.evidenceLog, historyLog: this.historyLog, physicalLog: this.physicalLog, globalDos: this.globalDos, globalAvoids: this.globalAvoids } };
             this.savedProfiles.unshift(entry);
             localStorage.setItem(this.profileStorageKey, JSON.stringify(this.savedProfiles));
+            this.profileReady = true;
+            this.lockHint = '';
         },
         loadProfile(id) {
             const profile = this.savedProfiles.find(p => p.id === id);
             if (!profile) return;
             this.user.name = profile.name; this.user.age = profile.age;
             Object.assign(this, profile.state);
+            this.profileReady = true;
+            this.syncProgressState();
+            this.lockHint = '';
         },
         deleteProfile(id) {
             this.savedProfiles = this.savedProfiles.filter(p => p.id !== id);
@@ -913,6 +953,8 @@ createApp({
     },
     mounted() {
         try { this.savedProfiles = JSON.parse(localStorage.getItem(this.profileStorageKey) || '[]'); } catch(e) { this.savedProfiles = []; }
+        if (this.savedProfiles.length) { this.profileReady = true; }
+        this.syncProgressState();
     }
 }).mount('#app');
 </script>
