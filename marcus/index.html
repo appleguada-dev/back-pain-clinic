@@ -85,15 +85,13 @@
                 </div>
             </div>
 
-
             <div>
                 <h3 class="text-xs font-bold text-slate-400 uppercase tracking-widest mb-3 border-b border-slate-700 pb-2">التنقل</h3>
                 <div class="space-y-2">
                     <button @click="goToPhase('intro')" class="w-full text-right px-3 py-2 rounded-lg text-xs font-bold" :class="currentPhase==='intro' ? 'bg-cyan-600 text-white' : 'bg-slate-700 text-slate-200'">الملف الشخصي</button>
                     <button @click="goToPhase('history')" :disabled="!isPhaseAccessible('history')" class="w-full text-right px-3 py-2 rounded-lg text-xs font-bold disabled:opacity-50 disabled:cursor-not-allowed" :class="currentPhase==='history' ? 'bg-cyan-600 text-white' : 'bg-slate-700 text-slate-200'">الأمان والاستبيان</button>
                     <button @click="goToPhase('physical')" :disabled="!isPhaseAccessible('physical')" class="w-full text-right px-3 py-2 rounded-lg text-xs font-bold disabled:opacity-50 disabled:cursor-not-allowed" :class="currentPhase==='physical' ? 'bg-cyan-600 text-white' : 'bg-slate-700 text-slate-200'">الاختبارات</button>
-                    <button @click="goToPhase('workout')" :disabled="!isPhaseAccessible('workout')" class="w-full text-right px-3 py-2 rounded-lg text-xs font-bold disabled:opacity-50 disabled:cursor-not-allowed" :class="currentPhase==='workout' ? 'bg-cyan-600 text-white' : 'bg-slate-700 text-slate-200'">التمارين</button>
-                    <button @click="goToPhase('final')" :disabled="!isPhaseAccessible('final')" class="w-full text-right px-3 py-2 rounded-lg text-xs font-bold disabled:opacity-50 disabled:cursor-not-allowed" :class="currentPhase==='final' ? 'bg-cyan-600 text-white' : 'bg-slate-700 text-slate-200'">التقرير</button>
+                    <button @click="goToPhase('final')" :disabled="!isPhaseAccessible('final')" class="w-full text-right px-3 py-2 rounded-lg text-xs font-bold disabled:opacity-50 disabled:cursor-not-allowed" :class="currentPhase==='final' ? 'bg-cyan-600 text-white' : 'bg-slate-700 text-slate-200'">التقرير النهائي</button>
                 </div>
                 <p v-if="lockHint" class="text-[11px] text-amber-300 bg-amber-900/30 border border-amber-700 rounded-lg px-2 py-2 mt-2">{{ lockHint }}</p>
                 <p v-else-if="!profileReady" class="text-[11px] text-slate-300">المراحل الأخرى ستفتح بعد حفظ الملف الشخصي وإكمال أسئلة الأمان.</p>
@@ -133,13 +131,9 @@
                     <span class="bg-cyan-100 text-cyan-700 p-1 md:p-1.5 rounded-lg text-xs md:text-sm">2</span>
                     اختبارات كراوس-ويبر ({{ physicalIndex + 1 }}/6)
                 </h2>
-                <h2 v-else-if="currentPhase === 'workout'" class="text-base md:text-xl font-bold text-slate-800 flex items-center gap-2">
-                    <span class="bg-orange-100 text-orange-700 w-6 h-6 md:w-auto md:h-auto md:p-1.5 flex items-center justify-center rounded-lg text-xs md:text-sm">3</span>
-                    <span>برنامج التمارين</span>
-                </h2>
                 <h2 v-else-if="currentPhase === 'final'" class="text-base md:text-xl font-bold text-slate-800 flex items-center gap-2">
                     <span class="bg-purple-100 text-purple-700 p-1 md:p-1.5 rounded-lg text-xs md:text-sm">3</span>
-                    الخطة العلاجية
+                    الخطة العلاجية والتقرير
                 </h2>
                 <h2 v-else class="text-base md:text-xl font-bold text-slate-800">مرحباً بك</h2>
             </div>
@@ -254,7 +248,7 @@
                 </div>
             </div>
 
-            <div v-if="currentPhase === 'physical'" class="max-w-7xl mx-auto h-full flex flex-col lg:flex-row gap-8">
+            <div v-if="currentPhase === 'physical'" class="max-w-7xl mx-auto h-full flex flex-col lg:flex-row gap-8 pb-24">
                 <div class="w-full lg:w-1/2 flex flex-col gap-6">
                     <div class="bg-white p-3 rounded-2xl shadow-xl border border-slate-200">
                         <div class="relative aspect-[4/3] bg-slate-100 rounded-xl overflow-hidden flex items-center justify-center group">
@@ -270,7 +264,7 @@
                     </div>
                 </div>
 
-                <div class="w-full lg:w-1/2 flex flex-col justify-center pb-10">
+                <div class="w-full lg:w-1/2 flex flex-col justify-center">
                     <transition name="fade" mode="out-in">
                         <div v-if="!currentTestResult" class="bg-white p-6 md:p-10 rounded-3xl shadow-2xl border border-slate-100">
                             <h3 class="text-xl md:text-2xl font-black text-slate-800 mb-8 leading-snug">{{ currentPhysicalTest.question }}</h3>
@@ -319,29 +313,13 @@
                                 <div class="flex gap-2">
                                 <button v-if="physicalIndex > 0" @click="prevPhysicalTest" class="px-4 bg-slate-200 text-slate-800 py-3 rounded-xl font-bold">السابق</button>
                                 <button @click="nextPhysicalTest" class="w-full bg-slate-900 text-white py-4 rounded-xl font-bold hover:bg-black shadow-lg flex justify-center items-center gap-2 transition-all hover:scale-[1.02]">
-                                    <span>حفظ النتيجة والانتقال للتالي</span>
+                                    <span>حفظ النتيجة والانتقال للتقرير</span>
                                     <span>&larr;</span>
                                 </button>
+                                </div>
                             </div>
                         </div>
                     </transition>
-                </div>
-            </div>
-
-
-            <div v-if="currentPhase === 'workout'" class="max-w-5xl mx-auto pb-24">
-                <div class="bg-white rounded-2xl shadow-xl p-6 md:p-8">
-                    <h3 class="text-2xl font-black mb-4">قسم التمارين (Norman Marcus)</h3>
-                    <p class="text-slate-600 mb-6">اختر المستوى المناسب لك وارجع له في أي وقت.</p>
-                    <div class="grid md:grid-cols-3 gap-4">
-                        <button v-for="level in levels" :key="level.id" @click="openSpecificLevel(level.id)" class="border rounded-xl p-4 text-right hover:border-cyan-500">
-                            <h4 class="font-bold">{{ level.name }}</h4>
-                            <p class="text-sm text-slate-600">{{ level.focus }}</p>
-                        </button>
-                    </div>
-                    <div class="mt-6 flex justify-end">
-                        <button @click="goToPhase('final')" class="bg-cyan-600 text-white px-6 py-3 rounded-xl font-bold hover:bg-cyan-700">عرض التقرير النهائي</button>
-                    </div>
                 </div>
             </div>
 
@@ -382,25 +360,28 @@
                     </div>
 
                     <div class="mb-16 print-break">
-                        <h3 class="text-xl font-black text-slate-800 mb-6 border-r-8 border-slate-400 pr-4">تصفح كافة المستويات (Browse All Levels)</h3>
+                        <div class="text-center mb-6">
+                            <h3 class="text-xl font-black text-slate-800 mb-2 border-b-2 border-slate-200 inline-block pb-1">تصفح كافة المستويات العلاجية</h3>
+                            <p class="text-sm text-slate-500">انتقل بين المستويات حسب تقدم حالتك</p>
+                        </div>
                         <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-                            <button @click="openSpecificLevel(1)" class="p-4 rounded-xl border border-cyan-200 bg-cyan-50 hover:bg-cyan-100 transition-colors text-right">
-                                <div class="font-bold text-cyan-800 text-lg">المستوى 1</div>
+                            <button @click="openSpecificLevel(1)" class="p-4 rounded-xl border border-cyan-200 bg-cyan-50 hover:bg-cyan-100 transition-all hover:-translate-y-1 shadow-sm text-right">
+                                <div class="font-bold text-cyan-800 text-lg mb-1">المستوى 1</div>
                                 <div class="text-xs text-cyan-600">الاسترخاء (Relaxation)</div>
                             </button>
-                            <button @click="openSpecificLevel(2)" class="p-4 rounded-xl border border-blue-200 bg-blue-50 hover:bg-blue-100 transition-colors text-right">
-                                <div class="font-bold text-blue-800 text-lg">المستوى 2</div>
+                            <button @click="openSpecificLevel(2)" class="p-4 rounded-xl border border-blue-200 bg-blue-50 hover:bg-blue-100 transition-all hover:-translate-y-1 shadow-sm text-right">
+                                <div class="font-bold text-blue-800 text-lg mb-1">المستوى 2</div>
                                 <div class="text-xs text-blue-600">التقوية (Mobilization)</div>
                             </button>
-                            <button @click="openSpecificLevel(3)" class="p-4 rounded-xl border border-green-200 bg-green-50 hover:bg-green-100 transition-colors text-right">
-                                <div class="font-bold text-green-800 text-lg">المستوى 3</div>
+                            <button @click="openSpecificLevel(3)" class="p-4 rounded-xl border border-green-200 bg-green-50 hover:bg-green-100 transition-all hover:-translate-y-1 shadow-sm text-right">
+                                <div class="font-bold text-green-800 text-lg mb-1">المستوى 3</div>
                                 <div class="text-xs text-green-600">المتقدم (Maintenance)</div>
                             </button>
                         </div>
                     </div>
 
                     <div class="mb-16 print-break">
-                        <h3 class="text-xl font-black text-slate-800 mb-6 border-r-8 border-slate-800 pr-4">ملخص اختبارات كراوس-ويبر</h3>
+                        <h3 class="text-xl font-black text-slate-800 mb-6 border-r-8 border-slate-800 pr-4">ملخص اختبارات كراوس-ويبر المفصل</h3>
                         <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
                             <div v-for="(test, i) in physicalLog" :key="i" :class="!test.passed ? 'border-red-200 bg-red-50' : 'border-green-200 bg-green-50'" class="p-4 rounded-xl border shadow-sm flex flex-col justify-between h-full card-break">
                                 <div>
@@ -413,8 +394,8 @@
                         </div>
                     </div>
 
-                    <div class="flex justify-center gap-4 no-print pb-12">
-                        <button onclick="window.print()" class="px-8 py-4 bg-slate-800 text-white rounded-xl font-bold hover:bg-slate-900 shadow-lg flex items-center gap-2">
+                    <div class="flex flex-col md:flex-row justify-center gap-4 pb-12">
+                        <button onclick="window.print()" class="px-8 py-4 bg-slate-800 text-white rounded-xl font-bold hover:bg-slate-900 shadow-lg flex items-center justify-center gap-2 transition-all hover:scale-105">
                             <span>🖨️</span> حفظ التقرير PDF
                         </button>
                     </div>
@@ -473,7 +454,7 @@
         <div class="bg-white w-full max-w-6xl h-[85vh] rounded-[20px] md:rounded-[30px] p-0 shadow-2xl relative animate-fade-in-up border-4 border-cyan-50 overflow-hidden flex flex-col">
             <div class="bg-slate-100 p-4 flex justify-between items-center border-b border-slate-200">
                 <h2 class="text-lg md:text-xl font-bold text-slate-700 flex items-center gap-2">
-                    <span>📘</span> دليل المعماري (The Manual)
+                    <span>📘</span> دليل الاستخدام الشامل
                 </h2>
                 <button @click="toggleGuide" class="bg-white rounded-full p-2 text-slate-500 hover:bg-red-50 hover:text-red-500 transition-colors shadow-sm w-10 h-10 flex items-center justify-center font-bold">✕</button>
             </div>
@@ -517,7 +498,7 @@ createApp({
             lastAnswerNote: null,
             showProgram: false,
             showGuide: false,
-            mobileLogOpen: false, // New Mobile Toggle
+            mobileLogOpen: false, 
             savedProfiles: [],
             profileStorageKey: 'marcusProfilesV1',
             profileReady: false,
@@ -525,7 +506,6 @@ createApp({
             physicalCompleted: false,
             lockHint: '',
             
-            // Level Display Logic
             displayedLevel: null,
 
             // === 1. SAFETY CHECK ===
@@ -709,8 +689,7 @@ createApp({
             return this.physicalLog.filter(t => t.isPain).length;
         },
         diagnosisTitle() { return this.failedTestsCount > 0 ? "تحت المستوى (Below Par)" : "مستوى الصيانة (Good)"; },
-        diagnosisSubtitle() { return this.failedTestsCount > 0 ? `فشلت في ${this.failedTestsCount} من أصل 6 اختبارات. عضلاتك "Soft Tissue" تحتاج لإعادة تأهيل.` : "نجحت في جميع الاختبارات. يمكنك الحفاظ على صحة ظهرك بالمستوى المتقدم."; },
-        // Default recommendation based on logic
+        diagnosisSubtitle() { return this.failedTestsCount > 0 ? `فشلت في ${this.failedTestsCount} من أصل 6 اختبارات. عضلاتك (Soft Tissue) تحتاج لإعادة تأهيل.` : "نجحت في جميع الاختبارات. يمكنك الحفاظ على صحة ظهرك بالمستوى المتقدم."; },
         recommendedLevel() { return this.failedTestsCount > 0 ? this.levels[1] : this.levels[2]; } 
     },
     methods: {
@@ -729,16 +708,17 @@ createApp({
         prevHistoryQuestion() { this.lastAnswerNote = null; if (this.historyIndex > 0) this.historyIndex--; },
         nextHistoryQuestion() {
             this.lastAnswerNote = null;
-            if (this.historyIndex < this.historyQuestions.length - 1) this.historyIndex++;
-            else {
-                this.historyCompleted = true;
+            if (this.historyIndex < this.historyQuestions.length - 1) {
+                this.historyIndex++;
+            } else {
+                // إصلاح الخلل: تحديد أن قسم الاستبيان قد اكتمل حتى تفتح الأزرار الجانبية
+                this.historyCompleted = true; 
                 this.currentPhase = 'physical';
             }
         },
         handlePhysicalAnswer(option) {
             this.currentTestResult = option;
             this.physicalLog.push({ title: this.currentPhysicalTest.title, passed: option.passed });
-            // "isPain" is essentially "Failed Test" in this context
             this.physicalLog[this.physicalLog.length - 1].isPain = !option.passed; 
             
             if (!option.passed) this.failedTests.push({ name: this.currentPhysicalTest.title, reason: option.feedback });
@@ -766,7 +746,7 @@ createApp({
             if (phase === 'intro') return true;
             if (phase === 'history') return this.profileReady;
             if (phase === 'physical') return this.profileReady && this.historyCompleted;
-            if (phase === 'workout' || phase === 'final') return this.profileReady && this.historyCompleted && this.physicalCompleted;
+            if (phase === 'final') return this.profileReady && this.historyCompleted && this.physicalCompleted;
             return false;
         },
         goToPhase(phase) {
@@ -778,9 +758,8 @@ createApp({
             this.currentPhase = phase;
         },
         syncProgressState() {
-            this.historyCompleted = this.historyCompleted || this.historyIndex >= this.historyQuestions.length - 1 || this.currentPhase === 'physical' || this.currentPhase === 'workout' || this.currentPhase === 'final';
-            this.physicalCompleted = this.physicalCompleted || this.physicalIndex >= this.physicalTests.length - 1 && (this.currentPhase === 'workout' || this.currentPhase === 'final');
-            if (this.currentPhase === 'workout') this.currentPhase = 'final';
+            this.historyCompleted = this.historyCompleted || this.historyIndex >= this.historyQuestions.length - 1 || this.currentPhase === 'physical' || this.currentPhase === 'final';
+            this.physicalCompleted = this.physicalCompleted || this.physicalIndex >= this.physicalTests.length - 1 && this.currentPhase === 'final';
         },
         saveProfile() {
             const entry = { id: Date.now(), name: this.user.name, age: this.user.age, state: { currentPhase: this.currentPhase, historyIndex: this.historyIndex, physicalIndex: this.physicalIndex, historyCompleted: this.historyCompleted, physicalCompleted: this.physicalCompleted, disclaimerAccepted: this.disclaimerAccepted, safetyPassed: this.safetyPassed, failedTests: this.failedTests, physicalLog: this.physicalLog } };
