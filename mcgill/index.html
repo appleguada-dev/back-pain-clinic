@@ -87,6 +87,7 @@
                     <button @click="goToPhase('intro')" class="w-full text-right px-3 py-2 rounded-lg text-xs font-bold" :class="currentPhase==='intro' ? 'bg-emerald-600 text-white' : 'bg-slate-700 text-slate-200'">الملف الشخصي</button>
                     <button @click="goToPhase('history')" :disabled="!isPhaseAccessible('history')" class="w-full text-right px-3 py-2 rounded-lg text-xs font-bold disabled:opacity-50 disabled:cursor-not-allowed" :class="currentPhase==='history' ? 'bg-emerald-600 text-white' : 'bg-slate-700 text-slate-200'">الاستبيان</button>
                     <button @click="goToPhase('physical')" :disabled="!isPhaseAccessible('physical')" class="w-full text-right px-3 py-2 rounded-lg text-xs font-bold disabled:opacity-50 disabled:cursor-not-allowed" :class="currentPhase==='physical' ? 'bg-emerald-600 text-white' : 'bg-slate-700 text-slate-200'">الاختبارات</button>
+                    <button @click="goToPhase('workout')" :disabled="!isPhaseAccessible('workout')" class="w-full text-right px-3 py-2 rounded-lg text-xs font-bold disabled:opacity-50 disabled:cursor-not-allowed" :class="currentPhase==='workout' ? 'bg-emerald-600 text-white' : 'bg-slate-700 text-slate-200'">التمارين اليومية</button>
                     <button @click="goToPhase('final')" :disabled="!isPhaseAccessible('final')" class="w-full text-right px-3 py-2 rounded-lg text-xs font-bold disabled:opacity-50 disabled:cursor-not-allowed" :class="currentPhase==='final' ? 'bg-emerald-600 text-white' : 'bg-slate-700 text-slate-200'">التقرير النهائي</button>
                 </div>
                 <p v-if="lockHint" class="text-[11px] text-amber-300 bg-amber-900/30 border border-amber-700 rounded-lg px-2 py-2 mt-2">{{ lockHint }}</p>
@@ -127,8 +128,12 @@
                     <span class="bg-emerald-100 text-emerald-700 w-6 h-6 md:w-auto md:h-auto md:p-1.5 flex items-center justify-center rounded-lg text-xs md:text-sm">2</span>
                     <span class="truncate">الاختبار {{ physicalIndex + 1 }} / {{ physicalTests.length }}</span>
                 </h2>
+                <h2 v-else-if="currentPhase === 'workout'" class="text-base md:text-xl font-bold text-slate-800 flex items-center gap-2">
+                    <span class="bg-emerald-100 text-emerald-700 w-6 h-6 md:w-auto md:h-auto md:p-1.5 flex items-center justify-center rounded-lg text-xs md:text-sm">3</span>
+                    <span>قسم التمارين اليومية</span>
+                </h2>
                 <h2 v-else-if="currentPhase === 'final'" class="text-base md:text-xl font-bold text-slate-800 flex items-center gap-2">
-                    <span class="bg-purple-100 text-purple-700 w-6 h-6 md:w-auto md:h-auto md:p-1.5 flex items-center justify-center rounded-lg text-xs md:text-sm">3</span>
+                    <span class="bg-purple-100 text-purple-700 w-6 h-6 md:w-auto md:h-auto md:p-1.5 flex items-center justify-center rounded-lg text-xs md:text-sm">4</span>
                     <span>التقرير النهائي</span>
                 </h2>
                 <h2 v-else class="text-lg md:text-xl font-bold text-slate-800">مرحباً بك</h2>
@@ -305,6 +310,46 @@
                             </div>
                         </div> 
                     </transition>
+                </div>
+            </div>
+
+            <div v-if="currentPhase === 'workout'" class="max-w-5xl mx-auto animate-fade-in-up">
+                <div class="mb-12 md:mb-16">
+                    <div class="text-center mb-8 md:mb-10">
+                        <h2 class="text-xl md:text-3xl font-bold text-slate-800 inline-block border-b-4 border-emerald-500 pb-2">قسم التمارين العلاجية (McGill)</h2>
+                        <p class="text-slate-500 mt-2 text-sm md:text-base">وصول مباشر من الشريط الجانبي لبدء الجلسة اليومية.</p>
+                    </div>
+
+                    <div class="bg-white border border-emerald-100 rounded-2xl p-4 md:p-5 mb-5 shadow-sm">
+                        <div class="flex flex-col md:flex-row md:items-center justify-between gap-3">
+                            <div>
+                                <p class="text-sm font-bold text-slate-700">تقدم الجلسة: {{ completedWorkoutCount }} / {{ workoutPlan.length }} تمارين</p>
+                                <p class="text-xs text-slate-500">أكمل كل بطاقة ثم ارجع للتقرير النهائي عند الانتهاء.</p>
+                            </div>
+                            <div class="flex items-center gap-3">
+                                <div class="w-40 h-2.5 bg-slate-200 rounded-full overflow-hidden"><div class="h-full bg-emerald-500" :style="{width: workoutCompletionRate + '%'}"></div></div>
+                                <span class="text-sm font-black text-emerald-700">{{ workoutCompletionRate }}%</span>
+                                <button @click="resetWorkoutSession" class="text-xs px-3 py-1.5 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-700">إعادة الجلسة</button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="grid md:grid-cols-3 gap-4 md:gap-6">
+                        <div class="bg-white border rounded-2xl p-5 md:p-6 shadow-md hover:shadow-lg transition-shadow" v-for="item in workoutPlan" :key="item.id">
+                            <div class="flex items-start justify-between gap-3 mb-3">
+                                <h4 class="font-bold text-lg text-emerald-800">{{ item.name }}</h4>
+                                <span class="text-[11px] font-bold px-2 py-1 rounded-full" :class="item.metric === 'seconds' ? 'bg-blue-100 text-blue-700' : 'bg-emerald-100 text-emerald-700'">{{ item.metric === 'seconds' ? 'بالدقائق/الثواني' : 'بالتكرارات' }}</span>
+                            </div>
+                            <p class="text-sm text-slate-600 leading-relaxed mb-3">{{ item.details }}</p>
+                            <div class="bg-slate-50 border border-slate-200 rounded-xl p-3 mb-4">
+                                <p class="text-xs text-slate-500 mb-1">الجرعة المقترحة</p>
+                                <p class="font-bold text-slate-800 text-sm">{{ item.dose }}</p>
+                            </div>
+                            <button @click="toggleWorkoutDone(item.id)" class="w-full py-2.5 rounded-xl text-sm font-bold transition-colors" :class="workoutTracker[item.id] ? 'bg-emerald-600 text-white' : 'bg-slate-100 text-slate-700 hover:bg-slate-200'">
+                                {{ workoutTracker[item.id] ? '✅ تم إكمال التمرين' : 'تسجيل كمكتمل' }}
+                            </button>
+                        </div>
+                    </div>
                 </div>
             </div>
 
@@ -955,6 +1000,7 @@ createApp({
             if (phase === 'intro') return true;
             if (phase === 'history') return this.profileReady;
             if (phase === 'physical') return this.profileReady && this.historyCompleted;
+            if (phase === 'workout') return this.profileReady && this.historyCompleted && this.physicalCompleted;
             if (phase === 'final') return this.profileReady && this.historyCompleted && this.physicalCompleted;
             return false;
         },
@@ -967,9 +1013,8 @@ createApp({
             this.currentPhase = phase;
         },
         syncProgressState() {
-            this.historyCompleted = this.historyCompleted || this.historyIndex >= this.historyQuestions.length - 1 || this.currentPhase === 'physical' || this.currentPhase === 'final';
-            this.physicalCompleted = this.physicalCompleted || this.physicalIndex >= this.physicalTests.length - 1 && this.currentPhase === 'final';
-            if (this.currentPhase === 'workout') this.currentPhase = 'final';
+            this.historyCompleted = this.historyCompleted || this.historyIndex >= this.historyQuestions.length - 1 || this.currentPhase === 'physical' || this.currentPhase === 'workout' || this.currentPhase === 'final';
+            this.physicalCompleted = this.physicalCompleted || this.physicalIndex >= this.physicalTests.length - 1 && (this.currentPhase === 'workout' || this.currentPhase === 'final');
         },
         saveProfile() {
             const entry = { id: Date.now(), name: this.user.name, age: this.user.age, state: { currentPhase: this.currentPhase, historyIndex: this.historyIndex, physicalIndex: this.physicalIndex, historyCompleted: this.historyCompleted, physicalCompleted: this.physicalCompleted, disclaimerAccepted: this.disclaimerAccepted, evidenceLog: this.evidenceLog, historyLog: this.historyLog, physicalLog: this.physicalLog, globalDos: this.globalDos, globalAvoids: this.globalAvoids, workoutTracker: this.workoutTracker } };
