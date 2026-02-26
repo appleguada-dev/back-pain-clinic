@@ -328,43 +328,46 @@
                 </div>
             </div>
 
-            <div v-if="currentPhase === 'workout'" class="max-w-5xl mx-auto animate-fade-in-up">
-                <div class="mb-16 bg-white rounded-3xl border border-cyan-100 shadow-lg p-5 md:p-7">
-                    <div class="text-center mb-6">
-                        <h3 class="text-xl md:text-2xl font-black text-slate-800 mb-2">قسم الجلسة اليومية (Workout App)</h3>
-                        <p class="text-sm text-slate-500">وصول مباشر من الشريط الجانبي للتمارين مع مجموعات وتكرارات/وقت.</p>
-                    </div>
+            <div v-if="currentPhase === 'workout'" class="max-w-6xl mx-auto animate-fade-in-up">
+                <div class="mb-8 text-center">
+                    <h3 class="text-2xl md:text-3xl font-black text-slate-800 mb-2">Workout App — خطط كل المستويات</h3>
+                    <p class="text-sm text-slate-500">التمارين متاحة مباشرة من الشريط الجانبي، وكل مستوى يحتوي كامل تمارينه.</p>
+                </div>
 
-                    <div class="bg-slate-50 rounded-2xl border border-slate-200 p-4 mb-5 flex flex-col md:flex-row md:items-center justify-between gap-3">
-                        <div>
-                            <p class="text-sm font-bold text-slate-700">تقدم الجلسة: {{ completedWorkoutCount }} / {{ currentWorkoutPlan.length }} تمارين</p>
-                            <p class="text-xs text-slate-500">الخطة مبنية على المستوى المقترح الحالي.</p>
-                        </div>
-                        <div class="flex items-center gap-3">
-                            <div class="w-40 h-2.5 bg-slate-200 rounded-full overflow-hidden"><div class="h-full bg-cyan-500" :style="{width: workoutCompletionRate + '%'}"></div></div>
-                            <span class="text-sm font-black text-cyan-700">{{ workoutCompletionRate }}%</span>
-                            <button @click="resetWorkoutSession" class="text-xs px-3 py-1.5 rounded-lg bg-white border border-slate-200 hover:bg-slate-100 text-slate-700">إعادة</button>
-                        </div>
+                <div class="bg-white rounded-2xl border border-cyan-100 shadow-sm p-4 mb-6 flex flex-col md:flex-row md:items-center justify-between gap-3">
+                    <div>
+                        <p class="text-sm font-bold text-slate-700">تقدمك العام: {{ completedWorkoutCount }} / {{ totalWorkoutExercises }} تمرين</p>
+                        <p class="text-xs text-slate-500">يمكنك التدريب على أي مستوى الآن، ثم المتابعة للتقرير النهائي عند الحاجة.</p>
                     </div>
+                    <div class="flex items-center gap-3">
+                        <div class="w-40 h-2.5 bg-slate-200 rounded-full overflow-hidden"><div class="h-full bg-cyan-500" :style="{width: workoutCompletionRate + '%'}"></div></div>
+                        <span class="text-sm font-black text-cyan-700">{{ workoutCompletionRate }}%</span>
+                        <button @click="resetWorkoutSession" class="text-xs px-3 py-1.5 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-700">إعادة الكل</button>
+                    </div>
+                </div>
 
-                    <div class="grid md:grid-cols-3 gap-4">
-                        <div v-for="item in currentWorkoutPlan" :key="item.id" class="border border-slate-200 rounded-2xl p-4 bg-white shadow-sm">
-                            <div class="flex items-start justify-between gap-2 mb-2">
-                                <h4 class="font-bold text-slate-800">{{ item.name }}</h4>
-                                <span class="text-[10px] font-bold px-2 py-1 rounded-full" :class="item.metric === 'seconds' ? 'bg-blue-100 text-blue-700' : 'bg-cyan-100 text-cyan-700'">{{ item.metric === 'seconds' ? 'وقت' : 'تكرارات' }}</span>
+                <div class="grid grid-cols-1 lg:grid-cols-3 gap-5 mb-10">
+                    <div v-for="level in levelsList" :key="level.id" class="bg-white border rounded-2xl shadow-sm overflow-hidden">
+                        <div class="p-4 border-b" :class="level.id === 1 ? 'bg-cyan-50 border-cyan-100' : level.id === 2 ? 'bg-blue-50 border-blue-100' : 'bg-green-50 border-green-100'">
+                            <h4 class="font-black text-slate-800 text-lg">{{ level.name }}</h4>
+                            <p class="text-xs text-slate-600 mt-1">التركيز: {{ level.focus }}</p>
+                        </div>
+                        <div class="p-4 space-y-3 max-h-[60vh] overflow-y-auto">
+                            <div v-for="(ex, exIndex) in level.exercises" :key="`${level.id}-${exIndex}`" class="border border-slate-200 rounded-xl p-3">
+                                <div class="flex items-start justify-between gap-3 mb-2">
+                                    <h5 class="font-bold text-slate-800 text-sm">{{ ex.nameAr }}</h5>
+                                    <span class="text-[10px] bg-slate-100 text-slate-600 px-2 py-0.5 rounded-full">{{ ex.nameEn }}</span>
+                                </div>
+                                <p class="text-xs text-slate-600 leading-relaxed mb-3">{{ ex.instruction }}</p>
+                                <button @click="toggleWorkoutDone(workoutKey(level.id, exIndex))" class="w-full py-2 rounded-lg text-xs font-bold transition-colors" :class="workoutTracker[workoutKey(level.id, exIndex)] ? 'bg-cyan-600 text-white' : 'bg-slate-100 text-slate-700 hover:bg-slate-200'">
+                                    {{ workoutTracker[workoutKey(level.id, exIndex)] ? '✅ مكتمل' : 'تسجيل كمكتمل' }}
+                                </button>
                             </div>
-                            <p class="text-xs text-slate-500 mb-3">{{ item.details }}</p>
-                            <div class="bg-slate-50 border border-slate-200 rounded-xl p-3 mb-3">
-                                <p class="text-[11px] text-slate-500 mb-1">الجرعة اليومية</p>
-                                <p class="text-sm font-bold text-slate-800">{{ item.dose }}</p>
-                            </div>
-                            <button @click="toggleWorkoutDone(item.id)" class="w-full py-2.5 rounded-xl text-sm font-bold transition-colors" :class="workoutTracker[item.id] ? 'bg-cyan-600 text-white' : 'bg-slate-100 text-slate-700 hover:bg-slate-200'">
-                                {{ workoutTracker[item.id] ? '✅ مكتمل' : 'تسجيل كمكتمل' }}
-                            </button>
                         </div>
                     </div>
                 </div>
             </div>
+
 
             <div v-if="currentPhase === 'final'" class="max-w-5xl mx-auto printable-area bg-slate-50 p-0 animate-fade-in-up mb-20 relative">
                 
@@ -587,23 +590,6 @@ createApp({
             
             displayedLevel: null,
             workoutTracker: {},
-            workoutPlansByLevel: {
-                1: [
-                    { id: 'relax-breath', name: 'تنفس حجابي عميق', dose: '3 مجموعات × 8 أنفاس بطيئة', metric: 'reps', details: 'شهيق من الأنف وزفير أطول من الفم مع استرخاء الكتفين.' },
-                    { id: 'frog-release', name: 'استرخاء وضعية الضفدع', dose: '2-3 جولات × 60 ثانية', metric: 'seconds', details: 'خفف الشد أسفل الظهر والفخذين تدريجياً دون ألم.' },
-                    { id: 'glute-squeeze', name: 'عصر العضلات الألوية', dose: '3 مجموعات × 10 تكرارات', metric: 'reps', details: 'ثبّت 3 ثوانٍ في كل تكرار ثم استرخِ.' }
-                ],
-                2: [
-                    { id: 'cat-camel', name: 'القطة والجمل', dose: '3 مجموعات × 8 تكرارات', metric: 'reps', details: 'حركة سلسة للعمود الفقري مع تنفس هادئ.' },
-                    { id: 'partial-situp', name: 'البطن الجزئي', dose: '3 مجموعات × 8-12 تكرار', metric: 'reps', details: 'ارفع الكتفين فقط وتجنب الاندفاع السريع.' },
-                    { id: 'hamstring-bike', name: 'إطالة الفخذ الخلفي', dose: '2 جولات × 20 ثانية لكل جهة', metric: 'seconds', details: 'حافظ على الركبة مستقيمة بدون ألم حاد.' }
-                ],
-                3: [
-                    { id: 'bridge', name: 'الجسر (Bridge)', dose: '3 مجموعات × 10 تكرارات', metric: 'reps', details: 'شد الجذع وارفع الحوض بخط مستقيم.' },
-                    { id: 'side-plank', name: 'البلانك الجانبي', dose: '3 جولات × 20-30 ثانية لكل جهة', metric: 'seconds', details: 'حافظ على خط مستقيم من الكتف إلى الركبة/القدم.' },
-                    { id: 'bird-dog', name: 'Bird Dog', dose: '3 مجموعات × 6-8 تكرارات لكل جهة', metric: 'reps', details: 'مد الأطراف ببطء مع منع دوران الحوض.' }
-                ]
-            },
 
             // === 1. SAFETY CHECK ===
             historyQuestions: [
@@ -788,15 +774,18 @@ createApp({
         diagnosisTitle() { return this.failedTestsCount > 0 ? "تحت المستوى (Below Par)" : "مستوى الصيانة (Good)"; },
         diagnosisSubtitle() { return this.failedTestsCount > 0 ? `فشلت في ${this.failedTestsCount} من أصل 6 اختبارات. عضلاتك (Soft Tissue) تحتاج لإعادة تأهيل.` : "نجحت في جميع الاختبارات. يمكنك الحفاظ على صحة ظهرك بالمستوى المتقدم."; },
         recommendedLevel() { return this.failedTestsCount > 0 ? this.levels[1] : this.levels[2]; },
-        currentWorkoutPlan() {
-            return this.workoutPlansByLevel[this.recommendedLevel.id] || [];
+        levelsList() {
+            return Object.values(this.levels).sort((a, b) => a.id - b.id);
+        },
+        totalWorkoutExercises() {
+            return this.levelsList.reduce((sum, level) => sum + level.exercises.length, 0);
         },
         completedWorkoutCount() {
-            return this.currentWorkoutPlan.filter(item => this.workoutTracker[item.id]).length;
+            return Object.values(this.workoutTracker).filter(Boolean).length;
         },
         workoutCompletionRate() {
-            if (!this.currentWorkoutPlan.length) return 0;
-            return Math.round((this.completedWorkoutCount / this.currentWorkoutPlan.length) * 100);
+            if (!this.totalWorkoutExercises) return 0;
+            return Math.round((this.completedWorkoutCount / this.totalWorkoutExercises) * 100);
         }
     },
     methods: {
@@ -849,10 +838,16 @@ createApp({
             this.displayedLevel = this.levels[id];
             this.showProgram = true;
         },
+        workoutKey(levelId, exerciseIndex) {
+            return `lvl${levelId}-ex${exerciseIndex}`;
+        },
         initializeWorkoutTracker() {
             const tracker = {};
-            this.currentWorkoutPlan.forEach(item => {
-                tracker[item.id] = this.workoutTracker[item.id] || false;
+            this.levelsList.forEach(level => {
+                level.exercises.forEach((_, index) => {
+                    const key = this.workoutKey(level.id, index);
+                    tracker[key] = this.workoutTracker[key] || false;
+                });
             });
             this.workoutTracker = tracker;
         },
@@ -860,8 +855,8 @@ createApp({
             this.workoutTracker[id] = !this.workoutTracker[id];
         },
         resetWorkoutSession() {
-            this.currentWorkoutPlan.forEach(item => {
-                this.workoutTracker[item.id] = false;
+            Object.keys(this.workoutTracker).forEach(key => {
+                this.workoutTracker[key] = false;
             });
         },
         isPhaseAccessible(phase) {
