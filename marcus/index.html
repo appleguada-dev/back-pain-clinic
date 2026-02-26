@@ -359,6 +359,42 @@
                         </div>
                     </div>
 
+                    <div class="mb-16 print-break bg-white rounded-3xl border border-cyan-100 shadow-lg p-5 md:p-7">
+                        <div class="text-center mb-6">
+                            <h3 class="text-xl md:text-2xl font-black text-slate-800 mb-2">قسم الجلسة اليومية (Workout App)</h3>
+                            <p class="text-sm text-slate-500">خطة جاهزة بالمجموعات والتكرارات/الوقت بناءً على مستواك المقترح.</p>
+                        </div>
+
+                        <div class="bg-slate-50 rounded-2xl border border-slate-200 p-4 mb-5 flex flex-col md:flex-row md:items-center justify-between gap-3">
+                            <div>
+                                <p class="text-sm font-bold text-slate-700">تقدم الجلسة: {{ completedWorkoutCount }} / {{ currentWorkoutPlan.length }} تمارين</p>
+                                <p class="text-xs text-slate-500">أكمل كل تمرين ثم افتح البرنامج التفصيلي إذا أردت شرحًا موسعًا.</p>
+                            </div>
+                            <div class="flex items-center gap-3">
+                                <div class="w-40 h-2.5 bg-slate-200 rounded-full overflow-hidden"><div class="h-full bg-cyan-500" :style="{width: workoutCompletionRate + '%'}"></div></div>
+                                <span class="text-sm font-black text-cyan-700">{{ workoutCompletionRate }}%</span>
+                                <button @click="resetWorkoutSession" class="text-xs px-3 py-1.5 rounded-lg bg-white border border-slate-200 hover:bg-slate-100 text-slate-700">إعادة</button>
+                            </div>
+                        </div>
+
+                        <div class="grid md:grid-cols-3 gap-4">
+                            <div v-for="item in currentWorkoutPlan" :key="item.id" class="border border-slate-200 rounded-2xl p-4 bg-white shadow-sm">
+                                <div class="flex items-start justify-between gap-2 mb-2">
+                                    <h4 class="font-bold text-slate-800">{{ item.name }}</h4>
+                                    <span class="text-[10px] font-bold px-2 py-1 rounded-full" :class="item.metric === 'seconds' ? 'bg-blue-100 text-blue-700' : 'bg-cyan-100 text-cyan-700'">{{ item.metric === 'seconds' ? 'وقت' : 'تكرارات' }}</span>
+                                </div>
+                                <p class="text-xs text-slate-500 mb-3">{{ item.details }}</p>
+                                <div class="bg-slate-50 border border-slate-200 rounded-xl p-3 mb-3">
+                                    <p class="text-[11px] text-slate-500 mb-1">الجرعة اليومية</p>
+                                    <p class="text-sm font-bold text-slate-800">{{ item.dose }}</p>
+                                </div>
+                                <button @click="toggleWorkoutDone(item.id)" class="w-full py-2.5 rounded-xl text-sm font-bold transition-colors" :class="workoutTracker[item.id] ? 'bg-cyan-600 text-white' : 'bg-slate-100 text-slate-700 hover:bg-slate-200'">
+                                    {{ workoutTracker[item.id] ? '✅ مكتمل' : 'تسجيل كمكتمل' }}
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
                     <div class="mb-16 print-break">
                         <div class="text-center mb-6">
                             <h3 class="text-xl font-black text-slate-800 mb-2 border-b-2 border-slate-200 inline-block pb-1">تصفح كافة المستويات العلاجية</h3>
@@ -507,6 +543,24 @@ createApp({
             lockHint: '',
             
             displayedLevel: null,
+            workoutTracker: {},
+            workoutPlansByLevel: {
+                1: [
+                    { id: 'relax-breath', name: 'تنفس حجابي عميق', dose: '3 مجموعات × 8 أنفاس بطيئة', metric: 'reps', details: 'شهيق من الأنف وزفير أطول من الفم مع استرخاء الكتفين.' },
+                    { id: 'frog-release', name: 'استرخاء وضعية الضفدع', dose: '2-3 جولات × 60 ثانية', metric: 'seconds', details: 'خفف الشد أسفل الظهر والفخذين تدريجياً دون ألم.' },
+                    { id: 'glute-squeeze', name: 'عصر العضلات الألوية', dose: '3 مجموعات × 10 تكرارات', metric: 'reps', details: 'ثبّت 3 ثوانٍ في كل تكرار ثم استرخِ.' }
+                ],
+                2: [
+                    { id: 'cat-camel', name: 'القطة والجمل', dose: '3 مجموعات × 8 تكرارات', metric: 'reps', details: 'حركة سلسة للعمود الفقري مع تنفس هادئ.' },
+                    { id: 'partial-situp', name: 'البطن الجزئي', dose: '3 مجموعات × 8-12 تكرار', metric: 'reps', details: 'ارفع الكتفين فقط وتجنب الاندفاع السريع.' },
+                    { id: 'hamstring-bike', name: 'إطالة الفخذ الخلفي', dose: '2 جولات × 20 ثانية لكل جهة', metric: 'seconds', details: 'حافظ على الركبة مستقيمة بدون ألم حاد.' }
+                ],
+                3: [
+                    { id: 'bridge', name: 'الجسر (Bridge)', dose: '3 مجموعات × 10 تكرارات', metric: 'reps', details: 'شد الجذع وارفع الحوض بخط مستقيم.' },
+                    { id: 'side-plank', name: 'البلانك الجانبي', dose: '3 جولات × 20-30 ثانية لكل جهة', metric: 'seconds', details: 'حافظ على خط مستقيم من الكتف إلى الركبة/القدم.' },
+                    { id: 'bird-dog', name: 'Bird Dog', dose: '3 مجموعات × 6-8 تكرارات لكل جهة', metric: 'reps', details: 'مد الأطراف ببطء مع منع دوران الحوض.' }
+                ]
+            },
 
             // === 1. SAFETY CHECK ===
             historyQuestions: [
@@ -690,7 +744,17 @@ createApp({
         },
         diagnosisTitle() { return this.failedTestsCount > 0 ? "تحت المستوى (Below Par)" : "مستوى الصيانة (Good)"; },
         diagnosisSubtitle() { return this.failedTestsCount > 0 ? `فشلت في ${this.failedTestsCount} من أصل 6 اختبارات. عضلاتك (Soft Tissue) تحتاج لإعادة تأهيل.` : "نجحت في جميع الاختبارات. يمكنك الحفاظ على صحة ظهرك بالمستوى المتقدم."; },
-        recommendedLevel() { return this.failedTestsCount > 0 ? this.levels[1] : this.levels[2]; } 
+        recommendedLevel() { return this.failedTestsCount > 0 ? this.levels[1] : this.levels[2]; },
+        currentWorkoutPlan() {
+            return this.workoutPlansByLevel[this.recommendedLevel.id] || [];
+        },
+        completedWorkoutCount() {
+            return this.currentWorkoutPlan.filter(item => this.workoutTracker[item.id]).length;
+        },
+        workoutCompletionRate() {
+            if (!this.currentWorkoutPlan.length) return 0;
+            return Math.round((this.completedWorkoutCount / this.currentWorkoutPlan.length) * 100);
+        }
     },
     methods: {
         startApp() {
@@ -742,6 +806,21 @@ createApp({
             this.displayedLevel = this.levels[id];
             this.showProgram = true;
         },
+        initializeWorkoutTracker() {
+            const tracker = {};
+            this.currentWorkoutPlan.forEach(item => {
+                tracker[item.id] = this.workoutTracker[item.id] || false;
+            });
+            this.workoutTracker = tracker;
+        },
+        toggleWorkoutDone(id) {
+            this.workoutTracker[id] = !this.workoutTracker[id];
+        },
+        resetWorkoutSession() {
+            this.currentWorkoutPlan.forEach(item => {
+                this.workoutTracker[item.id] = false;
+            });
+        },
         isPhaseAccessible(phase) {
             if (phase === 'intro') return true;
             if (phase === 'history') return this.profileReady;
@@ -762,7 +841,7 @@ createApp({
             this.physicalCompleted = this.physicalCompleted || this.physicalIndex >= this.physicalTests.length - 1 && this.currentPhase === 'final';
         },
         saveProfile() {
-            const entry = { id: Date.now(), name: this.user.name, age: this.user.age, state: { currentPhase: this.currentPhase, historyIndex: this.historyIndex, physicalIndex: this.physicalIndex, historyCompleted: this.historyCompleted, physicalCompleted: this.physicalCompleted, disclaimerAccepted: this.disclaimerAccepted, safetyPassed: this.safetyPassed, failedTests: this.failedTests, physicalLog: this.physicalLog } };
+            const entry = { id: Date.now(), name: this.user.name, age: this.user.age, state: { currentPhase: this.currentPhase, historyIndex: this.historyIndex, physicalIndex: this.physicalIndex, historyCompleted: this.historyCompleted, physicalCompleted: this.physicalCompleted, disclaimerAccepted: this.disclaimerAccepted, safetyPassed: this.safetyPassed, failedTests: this.failedTests, physicalLog: this.physicalLog, workoutTracker: this.workoutTracker } };
             this.savedProfiles.unshift(entry);
             localStorage.setItem(this.profileStorageKey, JSON.stringify(this.savedProfiles));
             this.profileReady = true;
@@ -775,6 +854,7 @@ createApp({
             Object.assign(this, profile.state);
             this.profileReady = true;
             this.syncProgressState();
+            this.initializeWorkoutTracker();
             this.lockHint = '';
         },
         deleteProfile(id) {
@@ -788,6 +868,7 @@ createApp({
         try { this.savedProfiles = JSON.parse(localStorage.getItem(this.profileStorageKey) || '[]'); } catch(e) { this.savedProfiles = []; }
         if (this.savedProfiles.length) { this.profileReady = true; }
         this.syncProgressState();
+        this.initializeWorkoutTracker();
     }
 }).mount('#app');
 </script>

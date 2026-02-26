@@ -369,12 +369,37 @@
                     <div class="mb-12 md:mb-16 print-break">
                         <div class="text-center mb-8 md:mb-10">
                             <h2 class="text-xl md:text-3xl font-bold text-slate-800 inline-block border-b-4 border-emerald-500 pb-2">قسم التمارين العلاجية (McGill)</h2>
-                            <p class="text-slate-500 mt-2 text-sm md:text-base">يمكنك الرجوع لهذا القسم في أي وقت للتدرب بأمان.</p>
+                            <p class="text-slate-500 mt-2 text-sm md:text-base">جلسة تدريب يومية بنظام مجموعات وتكرارات/دقائق — مثل تطبيق تمرين مصغّر.</p>
                         </div>
+
+                        <div class="bg-white border border-emerald-100 rounded-2xl p-4 md:p-5 mb-5 shadow-sm">
+                            <div class="flex flex-col md:flex-row md:items-center justify-between gap-3">
+                                <div>
+                                    <p class="text-sm font-bold text-slate-700">تقدم الجلسة: {{ completedWorkoutCount }} / {{ workoutPlan.length }} تمارين</p>
+                                    <p class="text-xs text-slate-500">أكمل كل بطاقة ثم ابدأ فيديو الشرح إذا احتجت.</p>
+                                </div>
+                                <div class="flex items-center gap-3">
+                                    <div class="w-40 h-2.5 bg-slate-200 rounded-full overflow-hidden"><div class="h-full bg-emerald-500" :style="{width: workoutCompletionRate + '%'}"></div></div>
+                                    <span class="text-sm font-black text-emerald-700">{{ workoutCompletionRate }}%</span>
+                                    <button @click="resetWorkoutSession" class="text-xs px-3 py-1.5 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-700">إعادة الجلسة</button>
+                                </div>
+                            </div>
+                        </div>
+
                         <div class="grid md:grid-cols-3 gap-4 md:gap-6">
-                            <div class="bg-white border rounded-2xl p-5 md:p-6 shadow-md hover:shadow-lg transition-shadow" v-for="item in workoutPlan" :key="item.name">
-                                <h4 class="font-bold mb-2 text-lg text-emerald-800">{{ item.name }}</h4>
-                                <p class="text-sm text-slate-600 leading-relaxed">{{ item.details }}</p>
+                            <div class="bg-white border rounded-2xl p-5 md:p-6 shadow-md hover:shadow-lg transition-shadow" v-for="item in workoutPlan" :key="item.id">
+                                <div class="flex items-start justify-between gap-3 mb-3">
+                                    <h4 class="font-bold text-lg text-emerald-800">{{ item.name }}</h4>
+                                    <span class="text-[11px] font-bold px-2 py-1 rounded-full" :class="item.metric === 'seconds' ? 'bg-blue-100 text-blue-700' : 'bg-emerald-100 text-emerald-700'">{{ item.metric === 'seconds' ? 'بالدقائق/الثواني' : 'بالتكرارات' }}</span>
+                                </div>
+                                <p class="text-sm text-slate-600 leading-relaxed mb-3">{{ item.details }}</p>
+                                <div class="bg-slate-50 border border-slate-200 rounded-xl p-3 mb-4">
+                                    <p class="text-xs text-slate-500 mb-1">الجرعة المقترحة</p>
+                                    <p class="font-bold text-slate-800 text-sm">{{ item.dose }}</p>
+                                </div>
+                                <button @click="toggleWorkoutDone(item.id)" class="w-full py-2.5 rounded-xl text-sm font-bold transition-colors" :class="workoutTracker[item.id] ? 'bg-emerald-600 text-white' : 'bg-slate-100 text-slate-700 hover:bg-slate-200'">
+                                    {{ workoutTracker[item.id] ? '✅ تم إكمال التمرين' : 'تسجيل كمكتمل' }}
+                                </button>
                             </div>
                         </div>
                     </div>
@@ -540,12 +565,13 @@ createApp({
             physicalCompleted: false,
             lockHint: '',
             
-            // بيانات التمارين
+            // بيانات التمارين (نسخة تطبيق تمرين مصغّرة)
             workoutPlan: [
-                { name: 'McGill Curl-Up', details: '3 مجموعات x 5-8 تكرارات مع الحفاظ على العمود الفقري محايداً.' },
-                { name: 'Side Plank', details: 'الثبات 10-20 ثانية لكل جهة، 3 جولات.' },
-                { name: 'Bird Dog', details: 'حركة بطيئة مع تثبيت الجذع، 5-8 تكرارات لكل جهة.' }
+                { id: 'curlup', name: 'McGill Curl-Up', details: 'حافظ على الظهر محايداً وارفع الكتفين قليلاً فقط.', dose: '3 مجموعات × 6-8 تكرارات', metric: 'reps' },
+                { id: 'sideplank', name: 'Side Plank', details: 'الثبات مع تنفس هادئ وتبديل الجهة بعد كل جولة.', dose: '3 جولات × 15-20 ثانية لكل جهة', metric: 'seconds' },
+                { id: 'birddog', name: 'Bird Dog', details: 'مد الذراع والساق المعاكسة ببطء مع ثبات الجذع.', dose: '3 مجموعات × 5-8 تكرارات لكل جهة', metric: 'reps' }
             ],
+            workoutTracker: {},
 
             globalDos: [],
             globalAvoids: [],
@@ -788,6 +814,13 @@ createApp({
             else current = totalSteps;
             return (current / totalSteps) * 100;
         },
+        completedWorkoutCount() {
+            return Object.values(this.workoutTracker).filter(Boolean).length;
+        },
+        workoutCompletionRate() {
+            if (!this.workoutPlan.length) return 0;
+            return Math.round((this.completedWorkoutCount / this.workoutPlan.length) * 100);
+        },
         finalDiagnosis() {
             let flexCount = this.evidenceLog.filter(e => e.type.includes('Flexion') || e.type.includes('Disc')).length;
             let extCount = this.evidenceLog.filter(e => e.type.includes('Extension') || e.type.includes('Facet')).length;
@@ -849,6 +882,21 @@ createApp({
                 navigator.clipboard.writeText(text);
                 alert('تم نسخ الملخص للحافظة! (Clipboard)');
             }
+        },
+        initializeWorkoutTracker() {
+            const tracker = {};
+            this.workoutPlan.forEach(item => {
+                tracker[item.id] = this.workoutTracker[item.id] || false;
+            });
+            this.workoutTracker = tracker;
+        },
+        toggleWorkoutDone(id) {
+            this.workoutTracker[id] = !this.workoutTracker[id];
+        },
+        resetWorkoutSession() {
+            this.workoutPlan.forEach(item => {
+                this.workoutTracker[item.id] = false;
+            });
         },
         handleHistoryAnswer(option) {
             if (option.trigger) {
@@ -924,7 +972,7 @@ createApp({
             if (this.currentPhase === 'workout') this.currentPhase = 'final';
         },
         saveProfile() {
-            const entry = { id: Date.now(), name: this.user.name, age: this.user.age, state: { currentPhase: this.currentPhase, historyIndex: this.historyIndex, physicalIndex: this.physicalIndex, historyCompleted: this.historyCompleted, physicalCompleted: this.physicalCompleted, disclaimerAccepted: this.disclaimerAccepted, evidenceLog: this.evidenceLog, historyLog: this.historyLog, physicalLog: this.physicalLog, globalDos: this.globalDos, globalAvoids: this.globalAvoids } };
+            const entry = { id: Date.now(), name: this.user.name, age: this.user.age, state: { currentPhase: this.currentPhase, historyIndex: this.historyIndex, physicalIndex: this.physicalIndex, historyCompleted: this.historyCompleted, physicalCompleted: this.physicalCompleted, disclaimerAccepted: this.disclaimerAccepted, evidenceLog: this.evidenceLog, historyLog: this.historyLog, physicalLog: this.physicalLog, globalDos: this.globalDos, globalAvoids: this.globalAvoids, workoutTracker: this.workoutTracker } };
             this.savedProfiles.unshift(entry);
             localStorage.setItem(this.profileStorageKey, JSON.stringify(this.savedProfiles));
             this.profileReady = true;
@@ -937,6 +985,7 @@ createApp({
             Object.assign(this, profile.state);
             this.profileReady = true;
             this.syncProgressState();
+            this.initializeWorkoutTracker();
             this.lockHint = '';
         },
         deleteProfile(id) {
@@ -948,6 +997,7 @@ createApp({
         try { this.savedProfiles = JSON.parse(localStorage.getItem(this.profileStorageKey) || '[]'); } catch(e) { this.savedProfiles = []; }
         if (this.savedProfiles.length) { this.profileReady = true; }
         this.syncProgressState();
+        this.initializeWorkoutTracker();
     }
 }).mount('#app');
 </script>
