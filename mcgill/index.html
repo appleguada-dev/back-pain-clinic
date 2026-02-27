@@ -317,7 +317,7 @@
                 <div class="mb-12 md:mb-16">
                     <div class="text-center mb-8 md:mb-10">
                         <h2 class="text-xl md:text-3xl font-bold text-slate-800 inline-block border-b-4 border-emerald-500 pb-2">قسم التمارين العلاجية (McGill)</h2>
-                        <p class="text-slate-500 mt-2 text-sm md:text-base">وصول مباشر من الشريط الجانبي لبدء الجلسة اليومية.</p>
+                        <p class="text-slate-500 mt-2 text-sm md:text-base">الخطة الكاملة: تعليمات + مجموعات + تكرارات + تايمر + تتبع الإكمال.</p>
                     </div>
 
                     <div class="bg-white border border-emerald-100 rounded-2xl p-4 md:p-5 mb-5 shadow-sm">
@@ -606,6 +606,7 @@ createApp({
             savedProfiles: [],
             profileStorageKey: 'mcgillProfilesV1',
             profileReady: false,
+            allPhasesUnlocked: false,
             historyCompleted: false,
             physicalCompleted: false,
             lockHint: '',
@@ -1031,6 +1032,7 @@ createApp({
         isPhaseAccessible(phase) {
             if (phase === 'intro') return true;
             if (phase === 'history') return this.profileReady;
+            if (this.allPhasesUnlocked) return this.profileReady;
             if (phase === 'physical') return this.profileReady && this.historyCompleted;
             if (phase === 'workout') return this.profileReady && this.historyCompleted && this.physicalCompleted;
             if (phase === 'final') return this.profileReady && this.historyCompleted && this.physicalCompleted;
@@ -1061,6 +1063,7 @@ createApp({
             this.user.name = profile.name; this.user.age = profile.age;
             Object.assign(this, profile.state);
             this.profileReady = true;
+            this.allPhasesUnlocked = true;
             this.syncProgressState();
             this.initializeWorkoutTracker();
             this.lockHint = '';

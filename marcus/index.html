@@ -599,6 +599,7 @@ createApp({
             savedProfiles: [],
             profileStorageKey: 'marcusProfilesV1',
             profileReady: false,
+            allPhasesUnlocked: false,
             historyCompleted: false,
             physicalCompleted: false,
             lockHint: '',
@@ -879,6 +880,7 @@ createApp({
         isPhaseAccessible(phase) {
             if (phase === 'intro') return true;
             if (phase === 'history') return this.profileReady;
+            if (this.allPhasesUnlocked) return this.profileReady;
             if (phase === 'physical') return this.profileReady && this.historyCompleted;
             if (phase === 'workout') return this.profileReady && this.historyCompleted && this.physicalCompleted;
             if (phase === 'final') return this.profileReady && this.historyCompleted && this.physicalCompleted;
@@ -909,6 +911,7 @@ createApp({
             this.user.name = profile.name; this.user.age = profile.age;
             Object.assign(this, profile.state);
             this.profileReady = true;
+            this.allPhasesUnlocked = true;
             this.syncProgressState();
             this.initializeWorkoutTracker();
             this.lockHint = '';
