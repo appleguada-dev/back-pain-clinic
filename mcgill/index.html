@@ -87,6 +87,7 @@
                     <button @click="goToPhase('intro')" class="w-full text-right px-3 py-2 rounded-lg text-xs font-bold" :class="currentPhase==='intro' ? 'bg-emerald-600 text-white' : 'bg-slate-700 text-slate-200'">الملف الشخصي</button>
                     <button @click="goToPhase('history')" :disabled="!isPhaseAccessible('history')" class="w-full text-right px-3 py-2 rounded-lg text-xs font-bold disabled:opacity-50 disabled:cursor-not-allowed" :class="currentPhase==='history' ? 'bg-emerald-600 text-white' : 'bg-slate-700 text-slate-200'">الاستبيان</button>
                     <button @click="goToPhase('physical')" :disabled="!isPhaseAccessible('physical')" class="w-full text-right px-3 py-2 rounded-lg text-xs font-bold disabled:opacity-50 disabled:cursor-not-allowed" :class="currentPhase==='physical' ? 'bg-emerald-600 text-white' : 'bg-slate-700 text-slate-200'">الاختبارات</button>
+                    <button @click="goToPhase('workout')" :disabled="!isPhaseAccessible('workout')" class="w-full text-right px-3 py-2 rounded-lg text-xs font-bold disabled:opacity-50 disabled:cursor-not-allowed" :class="currentPhase==='workout' ? 'bg-emerald-600 text-white' : 'bg-slate-700 text-slate-200'">التمارين اليومية</button>
                     <button @click="goToPhase('final')" :disabled="!isPhaseAccessible('final')" class="w-full text-right px-3 py-2 rounded-lg text-xs font-bold disabled:opacity-50 disabled:cursor-not-allowed" :class="currentPhase==='final' ? 'bg-emerald-600 text-white' : 'bg-slate-700 text-slate-200'">التقرير النهائي</button>
                 </div>
                 <p v-if="lockHint" class="text-[11px] text-amber-300 bg-amber-900/30 border border-amber-700 rounded-lg px-2 py-2 mt-2">{{ lockHint }}</p>
@@ -127,8 +128,12 @@
                     <span class="bg-emerald-100 text-emerald-700 w-6 h-6 md:w-auto md:h-auto md:p-1.5 flex items-center justify-center rounded-lg text-xs md:text-sm">2</span>
                     <span class="truncate">الاختبار {{ physicalIndex + 1 }} / {{ physicalTests.length }}</span>
                 </h2>
+                <h2 v-else-if="currentPhase === 'workout'" class="text-base md:text-xl font-bold text-slate-800 flex items-center gap-2">
+                    <span class="bg-emerald-100 text-emerald-700 w-6 h-6 md:w-auto md:h-auto md:p-1.5 flex items-center justify-center rounded-lg text-xs md:text-sm">3</span>
+                    <span>قسم التمارين اليومية</span>
+                </h2>
                 <h2 v-else-if="currentPhase === 'final'" class="text-base md:text-xl font-bold text-slate-800 flex items-center gap-2">
-                    <span class="bg-purple-100 text-purple-700 w-6 h-6 md:w-auto md:h-auto md:p-1.5 flex items-center justify-center rounded-lg text-xs md:text-sm">3</span>
+                    <span class="bg-purple-100 text-purple-700 w-6 h-6 md:w-auto md:h-auto md:p-1.5 flex items-center justify-center rounded-lg text-xs md:text-sm">4</span>
                     <span>التقرير النهائي</span>
                 </h2>
                 <h2 v-else class="text-lg md:text-xl font-bold text-slate-800">مرحباً بك</h2>
@@ -308,6 +313,53 @@
                 </div>
             </div>
 
+            <div v-if="currentPhase === 'workout'" class="max-w-5xl mx-auto animate-fade-in-up">
+                <div class="mb-12 md:mb-16">
+                    <div class="text-center mb-8 md:mb-10">
+                        <h2 class="text-xl md:text-3xl font-bold text-slate-800 inline-block border-b-4 border-emerald-500 pb-2">قسم التمارين العلاجية (McGill)</h2>
+                        <p class="text-slate-500 mt-2 text-sm md:text-base">الخطة الكاملة: تعليمات + مجموعات + تكرارات + تايمر + تتبع الإكمال.</p>
+                    </div>
+
+                    <div class="bg-white border border-emerald-100 rounded-2xl p-4 md:p-5 mb-5 shadow-sm">
+                        <div class="flex flex-col md:flex-row md:items-center justify-between gap-3">
+                            <div>
+                                <p class="text-sm font-bold text-slate-700">تقدم الجلسة: {{ completedWorkoutCount }} / {{ workoutPlan.length }} تمارين</p>
+                                <p class="text-xs text-slate-500">شريط التقدم ينتقل من أول تمرين إلى آخر تمرين حتى 100%.</p>
+                            </div>
+                            <div class="flex items-center gap-3">
+                                <div class="w-44 h-2.5 bg-slate-200 rounded-full overflow-hidden"><div class="h-full bg-emerald-500" :style="{width: workoutCompletionRate + '%'}"></div></div>
+                                <span class="text-sm font-black text-emerald-700">{{ workoutCompletionRate }}%</span>
+                                <button @click="resetWorkoutSession" class="text-xs px-3 py-1.5 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-700">إعادة الجلسة</button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="grid md:grid-cols-3 gap-4 md:gap-6">
+                        <div class="bg-white border rounded-2xl p-5 md:p-6 shadow-md hover:shadow-lg transition-shadow" v-for="(item, index) in workoutPlan" :key="item.id">
+                            <div class="flex items-start justify-between gap-3 mb-3">
+                                <h4 class="font-bold text-lg text-emerald-800">{{ index + 1 }}. {{ item.name }}</h4>
+                                <button @click="toggleWorkoutDone(item.id)" class="text-xs px-2.5 py-1 rounded-lg font-bold" :class="workoutTracker[item.id] ? 'bg-emerald-600 text-white' : 'bg-slate-100 text-slate-700'">{{ workoutTracker[item.id] ? 'مكتمل' : 'إكمال' }}</button>
+                            </div>
+                            <p class="text-sm text-slate-600 leading-relaxed mb-3">{{ item.details }}</p>
+                            <div class="grid grid-cols-3 gap-2 text-center mb-3">
+                                <div class="bg-slate-50 border rounded-lg p-2"><div class="text-[10px] text-slate-500">المجموعات</div><div class="text-sm font-black">{{ item.sets }}</div></div>
+                                <div class="bg-slate-50 border rounded-lg p-2"><div class="text-[10px] text-slate-500">التكرارات</div><div class="text-sm font-black">{{ item.reps }}</div></div>
+                                <div class="bg-slate-50 border rounded-lg p-2"><div class="text-[10px] text-slate-500">الوقت</div><div class="text-sm font-black">{{ item.seconds }}ث</div></div>
+                            </div>
+                            <div class="bg-slate-50 border rounded-lg p-2 mb-2">
+                                <div class="flex items-center justify-between mb-2"><span class="text-xs text-slate-500">المؤقت</span><span class="font-black text-slate-700">{{ formatSeconds(exerciseTimers[item.id] ?? item.seconds) }}</span></div>
+                                <div class="flex gap-2">
+                                    <button @click="startExerciseTimer(item.id, item.seconds)" class="flex-1 text-xs py-1.5 rounded bg-emerald-600 text-white">ابدأ</button>
+                                    <button @click="pauseExerciseTimer(item.id)" class="flex-1 text-xs py-1.5 rounded bg-slate-200 text-slate-700">إيقاف</button>
+                                    <button @click="resetExerciseTimer(item.id, item.seconds)" class="flex-1 text-xs py-1.5 rounded bg-slate-800 text-white">إعادة</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+
             <div v-if="currentPhase === 'final'" class="max-w-5xl mx-auto printable-area bg-slate-50 p-0 animate-fade-in-up mb-20 relative">
                 
                 <div class="bg-slate-900 text-white p-6 md:p-12 rounded-b-[30px] md:rounded-b-[40px] shadow-2xl text-center relative overflow-hidden mb-8 md:mb-12">
@@ -369,12 +421,37 @@
                     <div class="mb-12 md:mb-16 print-break">
                         <div class="text-center mb-8 md:mb-10">
                             <h2 class="text-xl md:text-3xl font-bold text-slate-800 inline-block border-b-4 border-emerald-500 pb-2">قسم التمارين العلاجية (McGill)</h2>
-                            <p class="text-slate-500 mt-2 text-sm md:text-base">يمكنك الرجوع لهذا القسم في أي وقت للتدرب بأمان.</p>
+                            <p class="text-slate-500 mt-2 text-sm md:text-base">جلسة تدريب يومية بنظام مجموعات وتكرارات/دقائق — مثل تطبيق تمرين مصغّر.</p>
                         </div>
+
+                        <div class="bg-white border border-emerald-100 rounded-2xl p-4 md:p-5 mb-5 shadow-sm">
+                            <div class="flex flex-col md:flex-row md:items-center justify-between gap-3">
+                                <div>
+                                    <p class="text-sm font-bold text-slate-700">تقدم الجلسة: {{ completedWorkoutCount }} / {{ workoutPlan.length }} تمارين</p>
+                                    <p class="text-xs text-slate-500">أكمل كل بطاقة ثم ابدأ فيديو الشرح إذا احتجت.</p>
+                                </div>
+                                <div class="flex items-center gap-3">
+                                    <div class="w-40 h-2.5 bg-slate-200 rounded-full overflow-hidden"><div class="h-full bg-emerald-500" :style="{width: workoutCompletionRate + '%'}"></div></div>
+                                    <span class="text-sm font-black text-emerald-700">{{ workoutCompletionRate }}%</span>
+                                    <button @click="resetWorkoutSession" class="text-xs px-3 py-1.5 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-700">إعادة الجلسة</button>
+                                </div>
+                            </div>
+                        </div>
+
                         <div class="grid md:grid-cols-3 gap-4 md:gap-6">
-                            <div class="bg-white border rounded-2xl p-5 md:p-6 shadow-md hover:shadow-lg transition-shadow" v-for="item in workoutPlan" :key="item.name">
-                                <h4 class="font-bold mb-2 text-lg text-emerald-800">{{ item.name }}</h4>
-                                <p class="text-sm text-slate-600 leading-relaxed">{{ item.details }}</p>
+                            <div class="bg-white border rounded-2xl p-5 md:p-6 shadow-md hover:shadow-lg transition-shadow" v-for="item in workoutPlan" :key="item.id">
+                                <div class="flex items-start justify-between gap-3 mb-3">
+                                    <h4 class="font-bold text-lg text-emerald-800">{{ item.name }}</h4>
+                                    <span class="text-[11px] font-bold px-2 py-1 rounded-full" :class="item.metric === 'seconds' ? 'bg-blue-100 text-blue-700' : 'bg-emerald-100 text-emerald-700'">{{ item.metric === 'seconds' ? 'بالدقائق/الثواني' : 'بالتكرارات' }}</span>
+                                </div>
+                                <p class="text-sm text-slate-600 leading-relaxed mb-3">{{ item.details }}</p>
+                                <div class="bg-slate-50 border border-slate-200 rounded-xl p-3 mb-4">
+                                    <p class="text-xs text-slate-500 mb-1">الجرعة المقترحة</p>
+                                    <p class="font-bold text-slate-800 text-sm">{{ item.dose }}</p>
+                                </div>
+                                <button @click="toggleWorkoutDone(item.id)" class="w-full py-2.5 rounded-xl text-sm font-bold transition-colors" :class="workoutTracker[item.id] ? 'bg-emerald-600 text-white' : 'bg-slate-100 text-slate-700 hover:bg-slate-200'">
+                                    {{ workoutTracker[item.id] ? '✅ تم إكمال التمرين' : 'تسجيل كمكتمل' }}
+                                </button>
                             </div>
                         </div>
                     </div>
@@ -536,16 +613,20 @@ createApp({
             savedProfiles: [],
             profileStorageKey: 'mcgillProfilesV1',
             profileReady: false,
+            allPhasesUnlocked: false,
             historyCompleted: false,
             physicalCompleted: false,
             lockHint: '',
             
-            // بيانات التمارين
+            // بيانات التمارين (نسخة تطبيق تمرين مصغّرة)
             workoutPlan: [
-                { name: 'McGill Curl-Up', details: '3 مجموعات x 5-8 تكرارات مع الحفاظ على العمود الفقري محايداً.' },
-                { name: 'Side Plank', details: 'الثبات 10-20 ثانية لكل جهة، 3 جولات.' },
-                { name: 'Bird Dog', details: 'حركة بطيئة مع تثبيت الجذع، 5-8 تكرارات لكل جهة.' }
+                { id: 'curlup', name: 'McGill Curl-Up', details: 'حافظ على الظهر محايداً وارفع الكتفين قليلاً فقط.', dose: '3 مجموعات × 6-8 تكرارات', metric: 'reps', sets: 3, reps: '6-8', seconds: 40 },
+                { id: 'sideplank', name: 'Side Plank', details: 'الثبات مع تنفس هادئ وتبديل الجهة بعد كل جولة.', dose: '3 جولات × 15-20 ثانية لكل جهة', metric: 'seconds', sets: 3, reps: '—', seconds: 20 },
+                { id: 'birddog', name: 'Bird Dog', details: 'مد الذراع والساق المعاكسة ببطء مع ثبات الجذع.', dose: '3 مجموعات × 5-8 تكرارات لكل جهة', metric: 'reps', sets: 3, reps: '5-8/جهة', seconds: 45 }
             ],
+            workoutTracker: {},
+            exerciseTimers: {},
+            timerIntervals: {},
 
             globalDos: [],
             globalAvoids: [],
@@ -788,6 +869,13 @@ createApp({
             else current = totalSteps;
             return (current / totalSteps) * 100;
         },
+        completedWorkoutCount() {
+            return Object.values(this.workoutTracker).filter(Boolean).length;
+        },
+        workoutCompletionRate() {
+            if (!this.workoutPlan.length) return 0;
+            return Math.round((this.completedWorkoutCount / this.workoutPlan.length) * 100);
+        },
         finalDiagnosis() {
             let flexCount = this.evidenceLog.filter(e => e.type.includes('Flexion') || e.type.includes('Disc')).length;
             let extCount = this.evidenceLog.filter(e => e.type.includes('Extension') || e.type.includes('Facet')).length;
@@ -850,6 +938,51 @@ createApp({
                 alert('تم نسخ الملخص للحافظة! (Clipboard)');
             }
         },
+        initializeWorkoutTracker() {
+            const tracker = {};
+            this.workoutPlan.forEach(item => {
+                tracker[item.id] = this.workoutTracker[item.id] || false;
+                this.exerciseTimers[item.id] = this.exerciseTimers[item.id] || item.seconds;
+            });
+            this.workoutTracker = tracker;
+        },
+        toggleWorkoutDone(id) {
+            this.workoutTracker[id] = !this.workoutTracker[id];
+        },
+        startExerciseTimer(id, seconds) {
+            this.exerciseTimers[id] = this.exerciseTimers[id] ?? seconds;
+            if (this.timerIntervals[id]) return;
+            this.timerIntervals[id] = setInterval(() => {
+                if (this.exerciseTimers[id] > 0) {
+                    this.exerciseTimers[id] -= 1;
+                } else {
+                    clearInterval(this.timerIntervals[id]);
+                    delete this.timerIntervals[id];
+                }
+            }, 1000);
+        },
+        pauseExerciseTimer(id) {
+            if (this.timerIntervals[id]) {
+                clearInterval(this.timerIntervals[id]);
+                delete this.timerIntervals[id];
+            }
+        },
+        resetExerciseTimer(id, seconds) {
+            this.pauseExerciseTimer(id);
+            this.exerciseTimers[id] = seconds;
+        },
+        formatSeconds(total) {
+            const sec = Math.max(0, Number(total || 0));
+            const m = String(Math.floor(sec / 60)).padStart(2, '0');
+            const s = String(sec % 60).padStart(2, '0');
+            return `${m}:${s}`;
+        },
+        resetWorkoutSession() {
+            this.workoutPlan.forEach(item => {
+                this.workoutTracker[item.id] = false;
+                this.resetExerciseTimer(item.id, item.seconds);
+            });
+        },
         handleHistoryAnswer(option) {
             if (option.trigger) {
                 this.evidenceLog.push({ source: 'تاريخ', type: option.trigger, note: option.note });
@@ -898,15 +1031,23 @@ createApp({
             if (this.physicalIndex < this.physicalTests.length - 1) {
                 this.physicalIndex++;
             } else {
-                this.physicalCompleted = true;
-                this.currentPhase = 'final'; // الانتقال المباشر للتقرير النهائي
+                this.unlockAllPhases('final'); // فتح كل المراحل بعد اكتمال الفحص
                 confetti({ particleCount: 150, spread: 70, origin: { y: 0.6 } });
             }
+        },
+        unlockAllPhases(defaultPhase = 'final') {
+            this.allPhasesUnlocked = true;
+            this.historyCompleted = true;
+            this.physicalCompleted = true;
+            if (defaultPhase) this.currentPhase = defaultPhase;
+            this.lockHint = '';
         },
         isPhaseAccessible(phase) {
             if (phase === 'intro') return true;
             if (phase === 'history') return this.profileReady;
+            if (this.allPhasesUnlocked) return this.profileReady;
             if (phase === 'physical') return this.profileReady && this.historyCompleted;
+            if (phase === 'workout') return this.profileReady && this.historyCompleted && this.physicalCompleted;
             if (phase === 'final') return this.profileReady && this.historyCompleted && this.physicalCompleted;
             return false;
         },
@@ -919,12 +1060,17 @@ createApp({
             this.currentPhase = phase;
         },
         syncProgressState() {
-            this.historyCompleted = this.historyCompleted || this.historyIndex >= this.historyQuestions.length - 1 || this.currentPhase === 'physical' || this.currentPhase === 'final';
-            this.physicalCompleted = this.physicalCompleted || this.physicalIndex >= this.physicalTests.length - 1 && this.currentPhase === 'final';
-            if (this.currentPhase === 'workout') this.currentPhase = 'final';
+            if (this.allPhasesUnlocked) {
+                this.historyCompleted = true;
+                this.physicalCompleted = true;
+                return;
+            }
+            this.historyCompleted = this.historyCompleted || this.historyIndex >= this.historyQuestions.length - 1 || this.currentPhase === 'physical' || this.currentPhase === 'workout' || this.currentPhase === 'final';
+            this.physicalCompleted = this.physicalCompleted || this.physicalIndex >= this.physicalTests.length - 1 && (this.currentPhase === 'workout' || this.currentPhase === 'final');
         },
         saveProfile() {
-            const entry = { id: Date.now(), name: this.user.name, age: this.user.age, state: { currentPhase: this.currentPhase, historyIndex: this.historyIndex, physicalIndex: this.physicalIndex, historyCompleted: this.historyCompleted, physicalCompleted: this.physicalCompleted, disclaimerAccepted: this.disclaimerAccepted, evidenceLog: this.evidenceLog, historyLog: this.historyLog, physicalLog: this.physicalLog, globalDos: this.globalDos, globalAvoids: this.globalAvoids } };
+            this.allPhasesUnlocked = true;
+            const entry = { id: Date.now(), name: this.user.name, age: this.user.age, state: { currentPhase: this.currentPhase, historyIndex: this.historyIndex, physicalIndex: this.physicalIndex, historyCompleted: true, physicalCompleted: true, disclaimerAccepted: this.disclaimerAccepted, evidenceLog: this.evidenceLog, historyLog: this.historyLog, physicalLog: this.physicalLog, globalDos: this.globalDos, globalAvoids: this.globalAvoids, workoutTracker: this.workoutTracker, allPhasesUnlocked: true } };
             this.savedProfiles.unshift(entry);
             localStorage.setItem(this.profileStorageKey, JSON.stringify(this.savedProfiles));
             this.profileReady = true;
@@ -936,8 +1082,9 @@ createApp({
             this.user.name = profile.name; this.user.age = profile.age;
             Object.assign(this, profile.state);
             this.profileReady = true;
+            this.unlockAllPhases(profile.state?.currentPhase || 'final');
             this.syncProgressState();
-            this.lockHint = '';
+            this.initializeWorkoutTracker();
         },
         deleteProfile(id) {
             this.savedProfiles = this.savedProfiles.filter(p => p.id !== id);
@@ -948,6 +1095,10 @@ createApp({
         try { this.savedProfiles = JSON.parse(localStorage.getItem(this.profileStorageKey) || '[]'); } catch(e) { this.savedProfiles = []; }
         if (this.savedProfiles.length) { this.profileReady = true; }
         this.syncProgressState();
+        this.initializeWorkoutTracker();
+    },
+    unmounted() {
+        Object.values(this.timerIntervals).forEach(i => clearInterval(i));
     }
 }).mount('#app');
 </script>
