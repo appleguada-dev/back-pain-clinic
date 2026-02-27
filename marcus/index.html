@@ -91,6 +91,7 @@
                     <button @click="goToPhase('intro')" class="w-full text-right px-3 py-2 rounded-lg text-xs font-bold" :class="currentPhase==='intro' ? 'bg-cyan-600 text-white' : 'bg-slate-700 text-slate-200'">الملف الشخصي</button>
                     <button @click="goToPhase('history')" :disabled="!isPhaseAccessible('history')" class="w-full text-right px-3 py-2 rounded-lg text-xs font-bold disabled:opacity-50 disabled:cursor-not-allowed" :class="currentPhase==='history' ? 'bg-cyan-600 text-white' : 'bg-slate-700 text-slate-200'">الأمان والاستبيان</button>
                     <button @click="goToPhase('physical')" :disabled="!isPhaseAccessible('physical')" class="w-full text-right px-3 py-2 rounded-lg text-xs font-bold disabled:opacity-50 disabled:cursor-not-allowed" :class="currentPhase==='physical' ? 'bg-cyan-600 text-white' : 'bg-slate-700 text-slate-200'">الاختبارات</button>
+                    <button @click="goToPhase('workout')" :disabled="!isPhaseAccessible('workout')" class="w-full text-right px-3 py-2 rounded-lg text-xs font-bold disabled:opacity-50 disabled:cursor-not-allowed" :class="currentPhase==='workout' ? 'bg-cyan-600 text-white' : 'bg-slate-700 text-slate-200'">التمارين اليومية</button>
                     <button @click="goToPhase('final')" :disabled="!isPhaseAccessible('final')" class="w-full text-right px-3 py-2 rounded-lg text-xs font-bold disabled:opacity-50 disabled:cursor-not-allowed" :class="currentPhase==='final' ? 'bg-cyan-600 text-white' : 'bg-slate-700 text-slate-200'">التقرير النهائي</button>
                 </div>
                 <p v-if="lockHint" class="text-[11px] text-amber-300 bg-amber-900/30 border border-amber-700 rounded-lg px-2 py-2 mt-2">{{ lockHint }}</p>
@@ -131,8 +132,12 @@
                     <span class="bg-cyan-100 text-cyan-700 p-1 md:p-1.5 rounded-lg text-xs md:text-sm">2</span>
                     اختبارات كراوس-ويبر ({{ physicalIndex + 1 }}/6)
                 </h2>
+                <h2 v-else-if="currentPhase === 'workout'" class="text-base md:text-xl font-bold text-slate-800 flex items-center gap-2">
+                    <span class="bg-cyan-100 text-cyan-700 p-1 md:p-1.5 rounded-lg text-xs md:text-sm">3</span>
+                    الجلسة اليومية للتمارين
+                </h2>
                 <h2 v-else-if="currentPhase === 'final'" class="text-base md:text-xl font-bold text-slate-800 flex items-center gap-2">
-                    <span class="bg-purple-100 text-purple-700 p-1 md:p-1.5 rounded-lg text-xs md:text-sm">3</span>
+                    <span class="bg-purple-100 text-purple-700 p-1 md:p-1.5 rounded-lg text-xs md:text-sm">4</span>
                     الخطة العلاجية والتقرير
                 </h2>
                 <h2 v-else class="text-base md:text-xl font-bold text-slate-800">مرحباً بك</h2>
@@ -323,6 +328,62 @@
                 </div>
             </div>
 
+            <div v-if="currentPhase === 'workout'" class="max-w-6xl mx-auto animate-fade-in-up">
+                <div class="mb-8 text-center">
+                    <h3 class="text-2xl md:text-3xl font-black text-slate-800 mb-2">Workout App — خطط كل المستويات</h3>
+                    <p class="text-sm text-slate-500">اختر أي مستوى وابدأ التمرين: تعليمات + مجموعات + تكرارات + تايمر + تتبع الإكمال.</p>
+                </div>
+
+                <div class="bg-white rounded-2xl border border-cyan-100 shadow-sm p-4 mb-6 flex flex-col md:flex-row md:items-center justify-between gap-3">
+                    <div>
+                        <p class="text-sm font-bold text-slate-700">تقدمك العام: {{ completedWorkoutCount }} / {{ totalWorkoutExercises }} تمرين</p>
+                        <p class="text-xs text-slate-500">كل تمرين مكتمل يرفع شريط التقدم حتى 100%.</p>
+                    </div>
+                    <div class="flex items-center gap-3">
+                        <div class="w-44 h-2.5 bg-slate-200 rounded-full overflow-hidden"><div class="h-full bg-cyan-500" :style="{width: workoutCompletionRate + '%'}"></div></div>
+                        <span class="text-sm font-black text-cyan-700">{{ workoutCompletionRate }}%</span>
+                        <button @click="resetWorkoutSession" class="text-xs px-3 py-1.5 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-700">إعادة الكل</button>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 lg:grid-cols-3 gap-5 mb-10">
+                    <div v-for="level in levelsList" :key="level.id" class="bg-white border rounded-2xl shadow-sm overflow-hidden">
+                        <div class="p-4 border-b" :class="level.id === 1 ? 'bg-cyan-50 border-cyan-100' : level.id === 2 ? 'bg-blue-50 border-blue-100' : 'bg-green-50 border-green-100'">
+                            <h4 class="font-black text-slate-800 text-lg">{{ level.name }}</h4>
+                            <p class="text-xs text-slate-600 mt-1 mb-2">التركيز: {{ level.focus }}</p>
+                            <div class="flex items-center gap-2">
+                                <div class="flex-1 h-2 bg-white/80 rounded-full overflow-hidden"><div class="h-full bg-cyan-500" :style="{width: levelProgress(level.id) + '%'}"></div></div>
+                                <span class="text-[11px] font-black text-slate-700">{{ levelProgress(level.id) }}%</span>
+                            </div>
+                        </div>
+                        <div class="p-4 space-y-3 max-h-[60vh] overflow-y-auto">
+                            <div v-for="(ex, exIndex) in level.exercises" :key="`${level.id}-${exIndex}`" class="border border-slate-200 rounded-xl p-3">
+                                <div class="flex items-start justify-between gap-3 mb-2">
+                                    <h5 class="font-bold text-slate-800 text-sm">{{ ex.nameAr }}</h5>
+                                    <button @click="toggleWorkoutDone(workoutKey(level.id, exIndex))" class="text-[11px] px-2 py-1 rounded-lg font-bold" :class="workoutTracker[workoutKey(level.id, exIndex)] ? 'bg-cyan-600 text-white' : 'bg-slate-100 text-slate-700'">{{ workoutTracker[workoutKey(level.id, exIndex)] ? 'مكتمل' : 'إكمال' }}</button>
+                                </div>
+                                <p class="text-[10px] bg-slate-100 text-slate-600 px-2 py-0.5 rounded-full inline-block mb-2">{{ ex.nameEn }}</p>
+                                <p class="text-xs text-slate-600 leading-relaxed mb-3">{{ ex.instruction }}</p>
+                                <div class="grid grid-cols-3 gap-2 text-center mb-3">
+                                    <div class="bg-slate-50 border rounded-lg p-2"><div class="text-[10px] text-slate-500">المجموعات</div><div class="text-sm font-black">{{ exerciseDose(level.id, exIndex).sets }}</div></div>
+                                    <div class="bg-slate-50 border rounded-lg p-2"><div class="text-[10px] text-slate-500">التكرارات</div><div class="text-sm font-black">{{ exerciseDose(level.id, exIndex).reps }}</div></div>
+                                    <div class="bg-slate-50 border rounded-lg p-2"><div class="text-[10px] text-slate-500">الوقت</div><div class="text-sm font-black">{{ exerciseDose(level.id, exIndex).seconds }}ث</div></div>
+                                </div>
+                                <div class="bg-slate-50 border rounded-lg p-2">
+                                    <div class="flex items-center justify-between mb-2"><span class="text-xs text-slate-500">المؤقت</span><span class="font-black text-slate-700">{{ formatSeconds(exerciseTimers[timerKey(level.id, exIndex)] ?? exerciseDose(level.id, exIndex).seconds) }}</span></div>
+                                    <div class="flex gap-2">
+                                        <button @click="startExerciseTimer(level.id, exIndex)" class="flex-1 text-xs py-1.5 rounded bg-cyan-600 text-white">ابدأ</button>
+                                        <button @click="pauseExerciseTimer(level.id, exIndex)" class="flex-1 text-xs py-1.5 rounded bg-slate-200 text-slate-700">إيقاف</button>
+                                        <button @click="resetExerciseTimer(level.id, exIndex)" class="flex-1 text-xs py-1.5 rounded bg-slate-800 text-white">إعادة</button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+
             <div v-if="currentPhase === 'final'" class="max-w-5xl mx-auto printable-area bg-slate-50 p-0 animate-fade-in-up mb-20 relative">
                 
                 <div class="bg-slate-900 text-white p-8 md:p-12 rounded-b-[30px] md:rounded-b-[40px] shadow-2xl text-center relative overflow-hidden mb-8 md:mb-12">
@@ -507,6 +568,9 @@ createApp({
             lockHint: '',
             
             displayedLevel: null,
+            workoutTracker: {},
+            exerciseTimers: {},
+            timerIntervals: {},
 
             // === 1. SAFETY CHECK ===
             historyQuestions: [
@@ -690,7 +754,20 @@ createApp({
         },
         diagnosisTitle() { return this.failedTestsCount > 0 ? "تحت المستوى (Below Par)" : "مستوى الصيانة (Good)"; },
         diagnosisSubtitle() { return this.failedTestsCount > 0 ? `فشلت في ${this.failedTestsCount} من أصل 6 اختبارات. عضلاتك (Soft Tissue) تحتاج لإعادة تأهيل.` : "نجحت في جميع الاختبارات. يمكنك الحفاظ على صحة ظهرك بالمستوى المتقدم."; },
-        recommendedLevel() { return this.failedTestsCount > 0 ? this.levels[1] : this.levels[2]; } 
+        recommendedLevel() { return this.failedTestsCount > 0 ? this.levels[1] : this.levels[2]; },
+        levelsList() {
+            return Object.values(this.levels).sort((a, b) => a.id - b.id);
+        },
+        totalWorkoutExercises() {
+            return this.levelsList.reduce((sum, level) => sum + level.exercises.length, 0);
+        },
+        completedWorkoutCount() {
+            return Object.values(this.workoutTracker).filter(Boolean).length;
+        },
+        workoutCompletionRate() {
+            if (!this.totalWorkoutExercises) return 0;
+            return Math.round((this.completedWorkoutCount / this.totalWorkoutExercises) * 100);
+        }
     },
     methods: {
         startApp() {
@@ -742,10 +819,89 @@ createApp({
             this.displayedLevel = this.levels[id];
             this.showProgram = true;
         },
+        workoutKey(levelId, exerciseIndex) {
+            return `lvl${levelId}-ex${exerciseIndex}`;
+        },
+        timerKey(levelId, exerciseIndex) {
+            return `timer-lvl${levelId}-ex${exerciseIndex}`;
+        },
+        exerciseDose(levelId, exerciseIndex) {
+            const sets = levelId === 1 ? 2 : 3;
+            const reps = levelId === 1 ? 8 : levelId === 2 ? 10 : 12;
+            const seconds = levelId === 1 ? 35 : levelId === 2 ? 45 : 60;
+            return { sets, reps, seconds: seconds + (exerciseIndex % 2 ? 5 : 0) };
+        },
+        levelExerciseCount(levelId) {
+            const level = this.levels[levelId];
+            return level ? level.exercises.length : 0;
+        },
+        levelCompletedCount(levelId) {
+            const level = this.levels[levelId];
+            if (!level) return 0;
+            return level.exercises.filter((_, index) => this.workoutTracker[this.workoutKey(levelId, index)]).length;
+        },
+        levelProgress(levelId) {
+            const total = this.levelExerciseCount(levelId);
+            if (!total) return 0;
+            return Math.round((this.levelCompletedCount(levelId) / total) * 100);
+        },
+        startExerciseTimer(levelId, exerciseIndex) {
+            const tKey = this.timerKey(levelId, exerciseIndex);
+            const remaining = this.exerciseTimers[tKey] ?? this.exerciseDose(levelId, exerciseIndex).seconds;
+            this.exerciseTimers[tKey] = remaining;
+            if (this.timerIntervals[tKey]) return;
+            this.timerIntervals[tKey] = setInterval(() => {
+                if (this.exerciseTimers[tKey] > 0) {
+                    this.exerciseTimers[tKey] -= 1;
+                } else {
+                    clearInterval(this.timerIntervals[tKey]);
+                    delete this.timerIntervals[tKey];
+                }
+            }, 1000);
+        },
+        pauseExerciseTimer(levelId, exerciseIndex) {
+            const tKey = this.timerKey(levelId, exerciseIndex);
+            if (this.timerIntervals[tKey]) {
+                clearInterval(this.timerIntervals[tKey]);
+                delete this.timerIntervals[tKey];
+            }
+        },
+        resetExerciseTimer(levelId, exerciseIndex) {
+            const tKey = this.timerKey(levelId, exerciseIndex);
+            this.pauseExerciseTimer(levelId, exerciseIndex);
+            this.exerciseTimers[tKey] = this.exerciseDose(levelId, exerciseIndex).seconds;
+        },
+        formatSeconds(total) {
+            const sec = Math.max(0, Number(total || 0));
+            const m = String(Math.floor(sec / 60)).padStart(2, '0');
+            const s = String(sec % 60).padStart(2, '0');
+            return `${m}:${s}`;
+        },
+        initializeWorkoutTracker() {
+            const tracker = {};
+            this.levelsList.forEach(level => {
+                level.exercises.forEach((_, index) => {
+                    const key = this.workoutKey(level.id, index);
+                    const tKey = this.timerKey(level.id, index);
+                    tracker[key] = this.workoutTracker[key] || false;
+                    this.exerciseTimers[tKey] = this.exerciseTimers[tKey] || this.exerciseDose(level.id, index).seconds;
+                });
+            });
+            this.workoutTracker = tracker;
+        },
+        toggleWorkoutDone(id) {
+            this.workoutTracker[id] = !this.workoutTracker[id];
+        },
+        resetWorkoutSession() {
+            Object.keys(this.workoutTracker).forEach(key => {
+                this.workoutTracker[key] = false;
+            });
+        },
         isPhaseAccessible(phase) {
             if (phase === 'intro') return true;
             if (phase === 'history') return this.profileReady;
             if (phase === 'physical') return this.profileReady && this.historyCompleted;
+            if (phase === 'workout') return this.profileReady && this.historyCompleted && this.physicalCompleted;
             if (phase === 'final') return this.profileReady && this.historyCompleted && this.physicalCompleted;
             return false;
         },
@@ -758,11 +914,11 @@ createApp({
             this.currentPhase = phase;
         },
         syncProgressState() {
-            this.historyCompleted = this.historyCompleted || this.historyIndex >= this.historyQuestions.length - 1 || this.currentPhase === 'physical' || this.currentPhase === 'final';
-            this.physicalCompleted = this.physicalCompleted || this.physicalIndex >= this.physicalTests.length - 1 && this.currentPhase === 'final';
+            this.historyCompleted = this.historyCompleted || this.historyIndex >= this.historyQuestions.length - 1 || this.currentPhase === 'physical' || this.currentPhase === 'workout' || this.currentPhase === 'final';
+            this.physicalCompleted = this.physicalCompleted || this.physicalIndex >= this.physicalTests.length - 1 && (this.currentPhase === 'workout' || this.currentPhase === 'final');
         },
         saveProfile() {
-            const entry = { id: Date.now(), name: this.user.name, age: this.user.age, state: { currentPhase: this.currentPhase, historyIndex: this.historyIndex, physicalIndex: this.physicalIndex, historyCompleted: this.historyCompleted, physicalCompleted: this.physicalCompleted, disclaimerAccepted: this.disclaimerAccepted, safetyPassed: this.safetyPassed, failedTests: this.failedTests, physicalLog: this.physicalLog } };
+            const entry = { id: Date.now(), name: this.user.name, age: this.user.age, state: { currentPhase: this.currentPhase, historyIndex: this.historyIndex, physicalIndex: this.physicalIndex, historyCompleted: this.historyCompleted, physicalCompleted: this.physicalCompleted, disclaimerAccepted: this.disclaimerAccepted, safetyPassed: this.safetyPassed, failedTests: this.failedTests, physicalLog: this.physicalLog, workoutTracker: this.workoutTracker } };
             this.savedProfiles.unshift(entry);
             localStorage.setItem(this.profileStorageKey, JSON.stringify(this.savedProfiles));
             this.profileReady = true;
@@ -775,6 +931,7 @@ createApp({
             Object.assign(this, profile.state);
             this.profileReady = true;
             this.syncProgressState();
+            this.initializeWorkoutTracker();
             this.lockHint = '';
         },
         deleteProfile(id) {
@@ -788,6 +945,10 @@ createApp({
         try { this.savedProfiles = JSON.parse(localStorage.getItem(this.profileStorageKey) || '[]'); } catch(e) { this.savedProfiles = []; }
         if (this.savedProfiles.length) { this.profileReady = true; }
         this.syncProgressState();
+        this.initializeWorkoutTracker();
+    },
+    unmounted() {
+        Object.values(this.timerIntervals).forEach(i => clearInterval(i));
     }
 }).mount('#app');
 </script>
