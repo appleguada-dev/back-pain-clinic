@@ -612,11 +612,13 @@ createApp({
             
             // بيانات التمارين (نسخة تطبيق تمرين مصغّرة)
             workoutPlan: [
-                { id: 'curlup', name: 'McGill Curl-Up', details: 'حافظ على الظهر محايداً وارفع الكتفين قليلاً فقط.', dose: '3 مجموعات × 6-8 تكرارات', metric: 'reps' },
-                { id: 'sideplank', name: 'Side Plank', details: 'الثبات مع تنفس هادئ وتبديل الجهة بعد كل جولة.', dose: '3 جولات × 15-20 ثانية لكل جهة', metric: 'seconds' },
-                { id: 'birddog', name: 'Bird Dog', details: 'مد الذراع والساق المعاكسة ببطء مع ثبات الجذع.', dose: '3 مجموعات × 5-8 تكرارات لكل جهة', metric: 'reps' }
+                { id: 'curlup', name: 'McGill Curl-Up', details: 'حافظ على الظهر محايداً وارفع الكتفين قليلاً فقط.', dose: '3 مجموعات × 6-8 تكرارات', metric: 'reps', sets: 3, reps: '6-8', seconds: 40 },
+                { id: 'sideplank', name: 'Side Plank', details: 'الثبات مع تنفس هادئ وتبديل الجهة بعد كل جولة.', dose: '3 جولات × 15-20 ثانية لكل جهة', metric: 'seconds', sets: 3, reps: '—', seconds: 20 },
+                { id: 'birddog', name: 'Bird Dog', details: 'مد الذراع والساق المعاكسة ببطء مع ثبات الجذع.', dose: '3 مجموعات × 5-8 تكرارات لكل جهة', metric: 'reps', sets: 3, reps: '5-8/جهة', seconds: 45 }
             ],
             workoutTracker: {},
+            exerciseTimers: {},
+            timerIntervals: {},
 
             globalDos: [],
             globalAvoids: [],
@@ -932,15 +934,45 @@ createApp({
             const tracker = {};
             this.workoutPlan.forEach(item => {
                 tracker[item.id] = this.workoutTracker[item.id] || false;
+                this.exerciseTimers[item.id] = this.exerciseTimers[item.id] || item.seconds;
             });
             this.workoutTracker = tracker;
         },
         toggleWorkoutDone(id) {
             this.workoutTracker[id] = !this.workoutTracker[id];
         },
+        startExerciseTimer(id, seconds) {
+            this.exerciseTimers[id] = this.exerciseTimers[id] ?? seconds;
+            if (this.timerIntervals[id]) return;
+            this.timerIntervals[id] = setInterval(() => {
+                if (this.exerciseTimers[id] > 0) {
+                    this.exerciseTimers[id] -= 1;
+                } else {
+                    clearInterval(this.timerIntervals[id]);
+                    delete this.timerIntervals[id];
+                }
+            }, 1000);
+        },
+        pauseExerciseTimer(id) {
+            if (this.timerIntervals[id]) {
+                clearInterval(this.timerIntervals[id]);
+                delete this.timerIntervals[id];
+            }
+        },
+        resetExerciseTimer(id, seconds) {
+            this.pauseExerciseTimer(id);
+            this.exerciseTimers[id] = seconds;
+        },
+        formatSeconds(total) {
+            const sec = Math.max(0, Number(total || 0));
+            const m = String(Math.floor(sec / 60)).padStart(2, '0');
+            const s = String(sec % 60).padStart(2, '0');
+            return `${m}:${s}`;
+        },
         resetWorkoutSession() {
             this.workoutPlan.forEach(item => {
                 this.workoutTracker[item.id] = false;
+                this.resetExerciseTimer(item.id, item.seconds);
             });
         },
         handleHistoryAnswer(option) {
@@ -1043,6 +1075,9 @@ createApp({
         if (this.savedProfiles.length) { this.profileReady = true; }
         this.syncProgressState();
         this.initializeWorkoutTracker();
+    },
+    unmounted() {
+        Object.values(this.timerIntervals).forEach(i => clearInterval(i));
     }
 }).mount('#app');
 </script>
