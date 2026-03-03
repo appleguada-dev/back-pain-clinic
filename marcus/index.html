@@ -834,6 +834,7 @@ createApp({
             this.currentTestResult = option;
             this.physicalLog.push({ title: this.currentPhysicalTest.title, passed: option.passed });
             this.physicalLog[this.physicalLog.length - 1].isPain = !option.passed; 
+            if (this.physicalIndex === this.physicalTests.length - 1) this.physicalCompleted = true;
             
             if (!option.passed) this.failedTests.push({ name: this.currentPhysicalTest.title, reason: option.feedback });
         },
@@ -964,7 +965,7 @@ createApp({
                 return;
             }
             this.historyCompleted = this.historyCompleted || this.historyIndex >= this.historyQuestions.length - 1 || this.currentPhase === 'physical' || this.currentPhase === 'workout' || this.currentPhase === 'final';
-            this.physicalCompleted = this.physicalCompleted || this.physicalIndex >= this.physicalTests.length - 1 && (this.currentPhase === 'workout' || this.currentPhase === 'final');
+            this.physicalCompleted = this.physicalCompleted || this.physicalLog.length >= this.physicalTests.length || (this.physicalIndex >= this.physicalTests.length - 1 && (this.currentPhase === 'workout' || this.currentPhase === 'final'));
         },
         saveProfile() {
             this.allPhasesUnlocked = true;
