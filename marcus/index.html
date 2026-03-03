@@ -328,53 +328,75 @@
                 </div>
             </div>
 
-            <div v-if="currentPhase === 'workout'" class="max-w-6xl mx-auto animate-fade-in-up">
+            <div v-if="currentPhase === 'workout'" class="max-w-7xl mx-auto animate-fade-in-up">
                 <div class="mb-8 text-center">
-                    <h3 class="text-2xl md:text-3xl font-black text-slate-800 mb-2">Workout App — خطط كل المستويات</h3>
-                    <p class="text-sm text-slate-500">اختر أي مستوى وابدأ التمرين: تعليمات + مجموعات + تكرارات + تايمر + تتبع الإكمال.</p>
+                    <h3 class="text-2xl md:text-3xl font-black text-slate-900 mb-2">Workout Studio — خطة علاجية احترافية</h3>
+                    <p class="text-sm text-slate-500">مؤقت دقيق، بطاقات تمارين أوضح، وشريط إكمال نظيف لمتابعة تقدمك اليومي.</p>
                 </div>
 
-                <div class="bg-white rounded-2xl border border-cyan-100 shadow-sm p-4 mb-6 flex flex-col md:flex-row md:items-center justify-between gap-3">
-                    <div>
-                        <p class="text-sm font-bold text-slate-700">تقدمك العام: {{ completedWorkoutCount }} / {{ totalWorkoutExercises }} تمرين</p>
-                        <p class="text-xs text-slate-500">كل تمرين مكتمل يرفع شريط التقدم حتى 100%.</p>
+                <div class="bg-gradient-to-l from-slate-900 via-slate-800 to-cyan-900 rounded-3xl shadow-xl p-5 md:p-6 mb-7 text-white">
+                    <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
+                        <div>
+                            <p class="text-sm md:text-base font-bold">تقدم الجلسة: {{ completedWorkoutCount }} / {{ totalWorkoutExercises }} تمرين</p>
+                            <p class="text-xs text-cyan-100 mt-1">حافظ على الاستمرارية — كل تمرين مكتمل يقربك من التعافي.</p>
+                        </div>
+                        <button @click="resetWorkoutSession" class="text-xs px-4 py-2 rounded-xl bg-white/15 hover:bg-white/25 border border-white/20 font-bold">إعادة الجلسة</button>
                     </div>
-                    <div class="flex items-center gap-3">
-                        <div class="w-44 h-2.5 bg-slate-200 rounded-full overflow-hidden"><div class="h-full bg-cyan-500" :style="{width: workoutCompletionRate + '%'}"></div></div>
-                        <span class="text-sm font-black text-cyan-700">{{ workoutCompletionRate }}%</span>
-                        <button @click="resetWorkoutSession" class="text-xs px-3 py-1.5 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-700">إعادة الكل</button>
+                    <div class="mt-4">
+                        <div class="flex items-center justify-between text-xs mb-2 text-cyan-100">
+                            <span>نسبة الإنجاز</span>
+                            <span class="font-black text-white">{{ workoutCompletionRate }}%</span>
+                        </div>
+                        <div class="w-full h-3 bg-white/20 rounded-full overflow-hidden">
+                            <div class="h-full bg-gradient-to-r from-cyan-300 via-cyan-400 to-emerald-300 transition-all duration-700" :style="{width: workoutCompletionRate + '%'}"></div>
+                        </div>
                     </div>
                 </div>
 
-                <div class="grid grid-cols-1 lg:grid-cols-3 gap-5 mb-10">
-                    <div v-for="level in levelsList" :key="level.id" class="bg-white border rounded-2xl shadow-sm overflow-hidden">
-                        <div class="p-4 border-b" :class="level.id === 1 ? 'bg-cyan-50 border-cyan-100' : level.id === 2 ? 'bg-blue-50 border-blue-100' : 'bg-green-50 border-green-100'">
-                            <h4 class="font-black text-slate-800 text-lg">{{ level.name }}</h4>
-                            <p class="text-xs text-slate-600 mt-1 mb-2">التركيز: {{ level.focus }}</p>
-                            <div class="flex items-center gap-2">
-                                <div class="flex-1 h-2 bg-white/80 rounded-full overflow-hidden"><div class="h-full bg-cyan-500" :style="{width: levelProgress(level.id) + '%'}"></div></div>
+                <div class="grid grid-cols-1 xl:grid-cols-3 gap-6 mb-10">
+                    <div v-for="level in levelsList" :key="level.id" class="bg-white border border-slate-200 rounded-3xl shadow-md overflow-hidden">
+                        <div class="p-4 border-b" :class="level.id === 1 ? 'bg-cyan-50 border-cyan-100' : level.id === 2 ? 'bg-blue-50 border-blue-100' : 'bg-emerald-50 border-emerald-100'">
+                            <div class="flex items-center justify-between gap-3">
+                                <div>
+                                    <h4 class="font-black text-slate-800 text-lg">{{ level.name }}</h4>
+                                    <p class="text-xs text-slate-600 mt-1">التركيز: {{ level.focus }}</p>
+                                </div>
+                                <span class="text-xs px-3 py-1 rounded-full bg-white border border-slate-200 font-bold text-slate-700">{{ level.exercises.length }} تمارين</span>
+                            </div>
+                            <div class="flex items-center gap-2 mt-3">
+                                <div class="flex-1 h-2.5 bg-white rounded-full overflow-hidden border border-white/70"><div class="h-full bg-cyan-500 transition-all duration-500" :style="{width: levelProgress(level.id) + '%'}"></div></div>
                                 <span class="text-[11px] font-black text-slate-700">{{ levelProgress(level.id) }}%</span>
                             </div>
                         </div>
-                        <div class="p-4 space-y-3 max-h-[60vh] overflow-y-auto">
-                            <div v-for="(ex, exIndex) in level.exercises" :key="`${level.id}-${exIndex}`" class="border border-slate-200 rounded-xl p-3">
+                        <div class="p-4 space-y-4 max-h-[66vh] overflow-y-auto">
+                            <div v-for="(ex, exIndex) in level.exercises" :key="`${level.id}-${exIndex}`" class="border border-slate-200 rounded-2xl p-4 bg-slate-50/50">
                                 <div class="flex items-start justify-between gap-3 mb-2">
-                                    <h5 class="font-bold text-slate-800 text-sm">{{ ex.nameAr }}</h5>
-                                    <button @click="toggleWorkoutDone(workoutKey(level.id, exIndex))" class="text-[11px] px-2 py-1 rounded-lg font-bold" :class="workoutTracker[workoutKey(level.id, exIndex)] ? 'bg-cyan-600 text-white' : 'bg-slate-100 text-slate-700'">{{ workoutTracker[workoutKey(level.id, exIndex)] ? 'مكتمل' : 'إكمال' }}</button>
+                                    <div>
+                                        <h5 class="font-black text-slate-800 text-sm md:text-base">{{ ex.nameAr }}</h5>
+                                        <p class="text-[10px] bg-slate-200 text-slate-700 px-2 py-0.5 rounded-full inline-block mt-1">{{ ex.nameEn }}</p>
+                                    </div>
+                                    <button @click="toggleWorkoutDone(workoutKey(level.id, exIndex))" class="text-xs px-3 py-1.5 rounded-lg font-black transition-colors" :class="workoutTracker[workoutKey(level.id, exIndex)] ? 'bg-emerald-600 text-white' : 'bg-white border border-slate-200 text-slate-700 hover:bg-slate-100'">{{ workoutTracker[workoutKey(level.id, exIndex)] ? '✓ مكتمل' : 'تحديد كمكتمل' }}</button>
                                 </div>
-                                <p class="text-[10px] bg-slate-100 text-slate-600 px-2 py-0.5 rounded-full inline-block mb-2">{{ ex.nameEn }}</p>
-                                <p class="text-xs text-slate-600 leading-relaxed mb-3">{{ ex.instruction }}</p>
+                                <p class="text-xs text-slate-600 leading-6 mb-3">{{ ex.instruction }}</p>
+
                                 <div class="grid grid-cols-3 gap-2 text-center mb-3">
-                                    <div class="bg-slate-50 border rounded-lg p-2"><div class="text-[10px] text-slate-500">المجموعات</div><div class="text-sm font-black">{{ exerciseDose(level.id, exIndex).sets }}</div></div>
-                                    <div class="bg-slate-50 border rounded-lg p-2"><div class="text-[10px] text-slate-500">التكرارات</div><div class="text-sm font-black">{{ exerciseDose(level.id, exIndex).reps }}</div></div>
-                                    <div class="bg-slate-50 border rounded-lg p-2"><div class="text-[10px] text-slate-500">الوقت</div><div class="text-sm font-black">{{ exerciseDose(level.id, exIndex).seconds }}ث</div></div>
+                                    <div class="bg-white border border-slate-200 rounded-xl p-2"><div class="text-[10px] text-slate-500">المجموعات</div><div class="text-sm font-black text-slate-800">{{ exerciseDose(level.id, exIndex).sets }}</div></div>
+                                    <div class="bg-white border border-slate-200 rounded-xl p-2"><div class="text-[10px] text-slate-500">التكرارات</div><div class="text-sm font-black text-slate-800">{{ exerciseDose(level.id, exIndex).reps }}</div></div>
+                                    <div class="bg-white border border-slate-200 rounded-xl p-2"><div class="text-[10px] text-slate-500">المدة</div><div class="text-sm font-black text-slate-800">{{ exerciseDose(level.id, exIndex).seconds }}ث</div></div>
                                 </div>
-                                <div class="bg-slate-50 border rounded-lg p-2">
-                                    <div class="flex items-center justify-between mb-2"><span class="text-xs text-slate-500">المؤقت</span><span class="font-black text-slate-700">{{ formatSeconds(exerciseTimers[timerKey(level.id, exIndex)] ?? exerciseDose(level.id, exIndex).seconds) }}</span></div>
+
+                                <div class="bg-white border border-slate-200 rounded-2xl p-3">
+                                    <div class="flex items-center justify-between mb-2">
+                                        <span class="text-xs text-slate-500 font-bold">المؤقت العلاجي</span>
+                                        <span class="font-black text-slate-800 text-base">{{ formatSeconds(exerciseTimers[timerKey(level.id, exIndex)] ?? exerciseDose(level.id, exIndex).seconds) }}</span>
+                                    </div>
+                                    <div class="w-full h-2 bg-slate-100 rounded-full overflow-hidden mb-3">
+                                        <div class="h-full bg-gradient-to-r from-cyan-500 to-blue-500 transition-all duration-500" :style="{ width: timerProgress(level.id, exIndex) + '%' }"></div>
+                                    </div>
                                     <div class="flex gap-2">
-                                        <button @click="startExerciseTimer(level.id, exIndex)" class="flex-1 text-xs py-1.5 rounded bg-cyan-600 text-white">ابدأ</button>
-                                        <button @click="pauseExerciseTimer(level.id, exIndex)" class="flex-1 text-xs py-1.5 rounded bg-slate-200 text-slate-700">إيقاف</button>
-                                        <button @click="resetExerciseTimer(level.id, exIndex)" class="flex-1 text-xs py-1.5 rounded bg-slate-800 text-white">إعادة</button>
+                                        <button @click="startExerciseTimer(level.id, exIndex)" class="flex-1 text-xs py-2 rounded-lg font-bold text-white" :class="isTimerRunning(level.id, exIndex) ? 'bg-cyan-400 cursor-default' : 'bg-cyan-600 hover:bg-cyan-700'">▶ بدء</button>
+                                        <button @click="pauseExerciseTimer(level.id, exIndex)" class="flex-1 text-xs py-2 rounded-lg font-bold bg-slate-200 text-slate-700 hover:bg-slate-300">⏸ إيقاف</button>
+                                        <button @click="resetExerciseTimer(level.id, exIndex)" class="flex-1 text-xs py-2 rounded-lg font-bold bg-slate-800 text-white hover:bg-black">↺ إعادة</button>
                                     </div>
                                 </div>
                             </div>
@@ -834,6 +856,7 @@ createApp({
             this.currentTestResult = option;
             this.physicalLog.push({ title: this.currentPhysicalTest.title, passed: option.passed });
             this.physicalLog[this.physicalLog.length - 1].isPain = !option.passed; 
+            if (this.physicalIndex === this.physicalTests.length - 1) this.physicalCompleted = true;
             
             if (!option.passed) this.failedTests.push({ name: this.currentPhysicalTest.title, reason: option.feedback });
         },
@@ -913,6 +936,15 @@ createApp({
             const s = String(sec % 60).padStart(2, '0');
             return `${m}:${s}`;
         },
+        isTimerRunning(levelId, exerciseIndex) {
+            return Boolean(this.timerIntervals[this.timerKey(levelId, exerciseIndex)]);
+        },
+        timerProgress(levelId, exerciseIndex) {
+            const total = this.exerciseDose(levelId, exerciseIndex).seconds;
+            if (!total) return 0;
+            const remaining = this.exerciseTimers[this.timerKey(levelId, exerciseIndex)] ?? total;
+            return Math.max(0, Math.min(100, Math.round(((total - remaining) / total) * 100)));
+        },
         initializeWorkoutTracker() {
             const tracker = {};
             this.levelsList.forEach(level => {
@@ -931,6 +963,13 @@ createApp({
         resetWorkoutSession() {
             Object.keys(this.workoutTracker).forEach(key => {
                 this.workoutTracker[key] = false;
+            });
+            Object.keys(this.exerciseTimers).forEach(key => {
+                const parts = key.match(/timer-lvl(\d+)-ex(\d+)/);
+                if (!parts) return;
+                const levelId = Number(parts[1]);
+                const exIndex = Number(parts[2]);
+                this.resetExerciseTimer(levelId, exIndex);
             });
         },
         unlockAllPhases(defaultPhase = 'final') {
@@ -964,7 +1003,7 @@ createApp({
                 return;
             }
             this.historyCompleted = this.historyCompleted || this.historyIndex >= this.historyQuestions.length - 1 || this.currentPhase === 'physical' || this.currentPhase === 'workout' || this.currentPhase === 'final';
-            this.physicalCompleted = this.physicalCompleted || this.physicalIndex >= this.physicalTests.length - 1 && (this.currentPhase === 'workout' || this.currentPhase === 'final');
+            this.physicalCompleted = this.physicalCompleted || this.physicalLog.length >= this.physicalTests.length || (this.physicalIndex >= this.physicalTests.length - 1 && (this.currentPhase === 'workout' || this.currentPhase === 'final'));
         },
         saveProfile() {
             this.allPhasesUnlocked = true;
